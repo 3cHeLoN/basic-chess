@@ -1,0 +1,7 @@
+# Basic chess
+A simple chess program that will consist of:
+* A front-end written for pygame (using SDL)
+* The game logic written in Python
+* A chess engine writte in a low-level language (C++)
+
+This program might be further expanded in a full program.
