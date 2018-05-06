@@ -45,15 +45,19 @@ class Pawn(ChessPiece):
 
     def valid_moves(self, row, col):
         """Return list of valid moves."""
-        capture_moves = []
         moves = []
         if on_board(row + self.direction, col):
             moves.append((row + self.direction, col))
+        return moves
+
+    def valid_capture_moves(self, row, col):
+        """Return list of valid capture moves."""
+        capture_moves = []
         if on_board(row + self.direction, col - 1):
             capture_moves.append((row + self.direction, col - 1))
         if on_board(row + self.direction, col + 1):
             capture_moves.append((row + self.direction, col + 1))
-        return moves, capture_moves
+        return capture_moves
 
 
 class Rook(ChessPiece):
@@ -73,8 +77,11 @@ class Rook(ChessPiece):
         moves = [(i, col) for i in range(8) if i != row]
         # add current row
         moves.extend([(row, i) for i in range(8) if i != col])
-        capture_moves = moves.copy()
-        return moves, capture_moves
+        return moves
+
+    def valid_capture_moves(self, row, col):
+        """Return list of valid capture moves."""
+        return self.valid_moves(row, col)
 
 
 class Bishop(ChessPiece):
@@ -99,8 +106,11 @@ class Bishop(ChessPiece):
             [(row + i, col - i)
              for i in range(-min(row, 7 - col), min(8 - row, col + 1))
              if i != 0])
-        capture_moves = moves.copy()
-        return moves, capture_moves
+        return moves
+
+    def valid_capture_moves(self, row, col):
+        """Return a list of valid capture moves."""
+        return self.valid_moves(row, col)
 
 
 class Knight(ChessPiece):
@@ -122,8 +132,11 @@ class Knight(ChessPiece):
         moves.extend([(row + i, col + j)
                       for i in [-2, 2] for j in [-1, 1]
                       if on_board(row + i, col + j)])
-        capture_moves = moves.copy()
-        return moves, capture_moves
+        return moves
+
+    def valid_capture_moves(self, row, col):
+        """Return list of valid capture moves."""
+        return self.valid_moves(row, col)
 
 
 class King(ChessPiece):
@@ -143,8 +156,11 @@ class King(ChessPiece):
                  for i in range(-min(1, row), min(2, 8 - row))
                  for j in range(-min(1, col), min(2, 8 - col))
                  if (i != 0 or j != 0)]
-        capture_moves = moves.copy()
-        return moves, capture_moves
+        return moves
+
+    def valid_capture_moves(self, row, col):
+        """Return list of valid capture moves."""
+        return self.valid_moves(row, col)
 
 
 class Queen(ChessPiece):
@@ -173,5 +189,8 @@ class Queen(ChessPiece):
         moves.extend([(i, col) for i in range(8) if i != row])
         # add current row
         moves.extend([(row, i) for i in range(8) if i != col])
-        capture_moves = moves.copy()
-        return moves, capture_moves
+        return moves
+
+    def valid_capture_moves(self, row, col):
+        """Return a list of valid capture moves."""
+        return self.valid_moves(row, col)

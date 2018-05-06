@@ -55,10 +55,20 @@ class ChessBoard(object):
         # first check if piece at target is not the same color
         from_field = self.get(from_pos[0], from_pos[1])
         to_field = self.get(to_pos[0], to_pos[1])
+        from_piece = from_field.get()
         if to_field.occupied:
             to_piece = to_field.get()
             if to_piece.color == color:
                 return False
+            else:
+                valid_moves = from_piece.valid_capture_moves(from_pos[0], from_pos[1])
+        else:
+            valid_moves = from_piece.valid_moves(from_pos[0], from_pos[1])
+
+        # check if this move corresponds to piece abilities
+        if to_pos not in valid_moves:
+            return False
+
         return True
 
     def move(self, color, from_pos, to_pos):
