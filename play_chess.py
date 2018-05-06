@@ -104,6 +104,10 @@ class ChessApp:
                                 from_row = clicked_row
                                 from_col = clicked_col
                                 highlighted_fields.append((clicked_row, clicked_col))
+                                moves, capture_moves = piece.valid_moves(from_row, from_col)
+                                moves = set(moves).union(set(capture_moves))
+                                for move in moves:
+                                    highlighted_fields.append(move)
                                 self.draw_board(highlighted_fields)
                                 current_mode = 1
                     elif current_mode == 1:
