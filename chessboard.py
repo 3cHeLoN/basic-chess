@@ -1,5 +1,8 @@
 """A chess board."""
 
+import numpy as np
+
+
 class Field(object):
     """Keep state of filed on the board."""
 
@@ -68,6 +71,17 @@ class ChessBoard(object):
         # check if this move corresponds to piece abilities
         if to_pos not in valid_moves:
             return False
+
+        # check if piece does not need to jump
+        if not from_piece.may_jump:
+            n_steps = max(abs(to_pos[0] - from_pos[0]), abs(to_pos[1] - from_pos[1]))
+            row_dir = np.sign(to_pos[0] - from_pos[0])
+            col_dir = np.sign(to_pos[1] - from_pos[1])
+            if n_steps > 1:
+                for i in range(1, n_steps):
+                    if self.get(from_pos[0] + row_dir * i,
+                                 from_pos[1] + col_dir * i).occupied:
+                        return False
 
         return True
 

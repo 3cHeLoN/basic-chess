@@ -104,9 +104,9 @@ class ChessApp:
                                 from_row = clicked_row
                                 from_col = clicked_col
                                 highlighted_fields.append((clicked_row, clicked_col))
-                                moves = piece.valid_moves(from_row, from_col)
-                                for move in moves:
-                                    highlighted_fields.append(move)
+                                #moves = piece.valid_moves(from_row, from_col)
+                                #for move in moves:
+                                #    highlighted_fields.append(move)
                                 self.draw_board(highlighted_fields)
                                 current_mode = 1
                     elif current_mode == 1:
