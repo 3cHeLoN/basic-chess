@@ -34,7 +34,7 @@ class ChessBoard(object):
         self.row_size = row_size
         self.col_size = col_size
         self.board = [[None for j in range(row_size)] for i in range(col_size)]
-        color = 'black'
+        color = 'white'
         for row in range(0, 8):
             if color == 'white':
                 color = 'black'
