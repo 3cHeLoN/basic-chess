@@ -107,8 +107,10 @@ class ChessApp:
                                 self.draw_board(highlighted_fields)
                                 current_mode = 1
                     elif current_mode == 1:
-                        self.game.move((from_row, from_col),
-                                       (clicked_row, clicked_col))
+                        # deselect piece?
+                        if not (clicked_row == from_row and clicked_col == from_col):
+                            self.game.move((from_row, from_col),
+                                           (clicked_row, clicked_col))
                         highlighted_fields = []
                         current_mode = 0
                         self.draw_board(highlighted_fields)
