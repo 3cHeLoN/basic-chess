@@ -10,7 +10,7 @@ class ChessPlayer(object):
         """Setp chess player."""
         if color not in ['white', 'black']:
             raise ValueError("Unrecognized color!")
-        self._color = color
+        self.color = color
         self.active_pieces = None
         self.setup_pieces()
 
@@ -18,26 +18,26 @@ class ChessPlayer(object):
         """Initialize pieces."""
         self.active_pieces = []
         cols = range(8)
-        if self._color == 'white':
+        if self.color == 'white':
             front_row = 1
             back_row = 0
-        if self._color == 'black':
+        if self.color == 'black':
             front_row = 6
             back_row = 7
 
         # add pawns
         for i in cols:
-            self.active_pieces.append(Pawn(self._color, (front_row, i)))
+            self.active_pieces.append(Pawn(self.color, (front_row, i)))
         # add rooks
-        self.active_pieces.append(Rook(self._color, (back_row, cols[0])))
-        self.active_pieces.append(Rook(self._color, (back_row, cols[-1])))
+        self.active_pieces.append(Rook(self.color, (back_row, cols[0])))
+        self.active_pieces.append(Rook(self.color, (back_row, cols[-1])))
         # add knights
-        self.active_pieces.append(Knight(self._color, (back_row, cols[1])))
-        self.active_pieces.append(Knight(self._color, (back_row, cols[-2])))
+        self.active_pieces.append(Knight(self.color, (back_row, cols[1])))
+        self.active_pieces.append(Knight(self.color, (back_row, cols[-2])))
         # add bishops
-        self.active_pieces.append(Bishop(self._color, (back_row, cols[2])))
-        self.active_pieces.append(Bishop(self._color, (back_row, cols[-3])))
+        self.active_pieces.append(Bishop(self.color, (back_row, cols[2])))
+        self.active_pieces.append(Bishop(self.color, (back_row, cols[-3])))
         # add king
-        self.active_pieces.append(King(self._color, (back_row, cols[4])))
+        self.active_pieces.append(King(self.color, (back_row, cols[4])))
         # add queen
-        self.active_pieces.append(Queen(self._color, (back_row, cols[3])))
+        self.active_pieces.append(Queen(self.color, (back_row, cols[3])))

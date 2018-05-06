@@ -29,9 +29,11 @@ class Field(object):
 class ChessBoard(object):
     """Keep state of chessboard."""
 
-    def __init__(self):
+    def __init__(self, row_size=8, col_size=8):
         """Create instance."""
-        self.board = [[None for j in range(8)] for i in range(8)]
+        self.row_size = row_size
+        self.col_size = col_size
+        self.board = [[None for j in range(row_size)] for i in range(col_size)]
         color = 'black'
         for row in range(0, 8):
             if color == 'white':
@@ -45,9 +47,29 @@ class ChessBoard(object):
                 else:
                     color = 'black'
 
-    def move(self, from_pos, to_pos):
+    def get(self, row, col):
+        return self.board[row][col]
+
+    def legal_move(self, color, from_pos, to_pos):
+        """Check if move is legal."""
+        # allow all moves for now
+        return True
+
+    def move(self, color, from_pos, to_pos):
         """Move a piece."""
-        pass
+        if self.legal_move(color, from_pos, to_pos):
+            # get field
+            from_field = self.get(from_pos[0], from_pos[1])
+            to_field = self.get(to_pos[0], to_pos[1])
+            # get piece
+            piece = from_field.get()
+            # empty field
+            from_field.empty()
+            # put piece to field
+            to_field.set(piece)
+            return True
+        else:
+            return False
 
     def position(self, piece, position):
         """Place a piece."""
@@ -58,8 +80,8 @@ class ChessBoard(object):
         """Show self."""
         # start from last row
         end_char = u'\u001b[0m'
-        white = u'\u001b[48;5;251m'#u'\u001b[37;1m'
-        black = u'\u001b[48;5;237m'#u'\u001b[37;1m'
+        white = u'\u001b[48;5;251m'
+        black = u'\u001b[48;5;237m'
         underl = u'\u001b[4m'
         row_color = black
         color = black
@@ -87,5 +109,6 @@ class ChessBoard(object):
                     print(color + ' ' + piece.short_name + ' ' + end_char, end='')
                 else:
                     print(color + ' ' + underl + piece.short_name + end_char +  color + ' ' + end_char, end='')
+        print('\n')
 
 
