@@ -52,7 +52,13 @@ class ChessBoard(object):
 
     def legal_move(self, color, from_pos, to_pos):
         """Check if move is legal."""
-        # allow all moves for now
+        # first check if piece at target is not the same color
+        from_field = self.get(from_pos[0], from_pos[1])
+        to_field = self.get(to_pos[0], to_pos[1])
+        if to_field.occupied:
+            to_piece = to_field.get()
+            if to_piece.color == color:
+                return False
         return True
 
     def move(self, color, from_pos, to_pos):

@@ -29,10 +29,13 @@ class ChessGame(object):
         return self.chessboard
 
     def move(self, from_pos, to_pos):
-        self.chessboard.move(self.current_player.color, from_pos, to_pos)
+        is_legal = self.chessboard.move(self.current_player.color, from_pos, to_pos)
+        if not is_legal:
+            return False
         # switch current player
         if self.current_player.color == 'white':
             self.current_player = self.player_black
         else:
             self.current_player = self.player_white
         self.moves += 1
+        return True
