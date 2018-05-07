@@ -17,6 +17,7 @@ class ChessPiece(ABC):
         self.initial_position = initial_position
         self.files = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         self.may_jump = None
+        self.n_moves = 0
 
     def __str__(self):
         """Display self."""
@@ -167,6 +168,10 @@ class King(ChessPiece):
         self.name = 'King'
         self.short_name = 'K'
         self.may_jump = False
+        if color == 'white':
+            self.castle_fields = [(0, 1), (0, 6)]
+        else:
+            self.castle_fields = [(7, 1), (7, 6)]
 
     def valid_moves(self, row, col):
         """Return list of valid moves."""
@@ -182,7 +187,10 @@ class King(ChessPiece):
 
     def specialty_moves(self, row, col):
         """Return list of valid capture_moves."""
-        return []
+        if self.n_moves > 0:
+            return []
+        else:
+            return self.castle_fields
 
 
 class Queen(ChessPiece):

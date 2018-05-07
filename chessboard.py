@@ -76,6 +76,10 @@ class ChessBoard(object):
             # still not a valid (specialty) move?
             if to_pos not in valid_moves:
                 return False
+            elif from_piece.short_name == 'K':
+                # separately handle castling
+                if not self.may_castle(from_piece, from_pos, to_pos):
+                    return False
 
         # check if piece does not need to jump
         if not from_piece.may_jump:
@@ -90,6 +94,35 @@ class ChessBoard(object):
 
         return True
 
+    def may_castle(self, king, from_pos, to_pos):
+        """Determines if king can castle."""
+        # simply check if the squares are not under attack
+        if king.color == 'white':
+            opponent_color = 'black'
+        else:
+            opponent_color = 'white'
+
+        import ipdb; ipdb.set_trace()
+        positions_under_attack = self.under_attack_by(opponent_color)
+        
+        n_steps = abs(to_pos[1] - from_pos[1])
+        col_dir = np.sign(to_pos[1] - from_pos[1])
+        for i in range(1, n_steps + 1):
+            if (from_pos[0], from_pos[1] + col_dir * i) in positions_under_attack:
+                return False
+        return True
+
+    def under_attack_by(self, color):
+        """Return list of positions under attack."""
+        positions = []
+
+        for row in range(8):
+            for col in range(8):
+                piece = self.get(row, col).get()
+                if piece is not None and piece.color == color:
+                    positions.extend(piece.valid_capture_moves(row, col))
+        return positions
+
     def move(self, color, from_pos, to_pos):
         """Move a piece."""
         if self.legal_move(color, from_pos, to_pos):
@@ -102,6 +135,8 @@ class ChessBoard(object):
             from_field.empty()
             # put piece to field
             to_field.set(piece)
+            # increment number of moves
+            piece.n_moves += 1
             return True
         else:
             return False
