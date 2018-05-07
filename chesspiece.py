@@ -59,6 +59,12 @@ class Pawn(ChessPiece):
             capture_moves.append((row + self.direction, col + 1))
         return capture_moves
 
+    def specialty_moves(self, row, col):
+        """Return list of valid capture_moves."""
+        if row == self.initial_position[0]:
+            return [(row + self.direction * 2, col)]
+        return []
+
 
 class Rook(ChessPiece):
     """A rook."""
@@ -82,6 +88,10 @@ class Rook(ChessPiece):
     def valid_capture_moves(self, row, col):
         """Return list of valid capture moves."""
         return self.valid_moves(row, col)
+
+    def specialty_moves(self, row, col):
+        """Return list of valid capture_moves."""
+        return []
 
 
 class Bishop(ChessPiece):
@@ -112,6 +122,10 @@ class Bishop(ChessPiece):
         """Return a list of valid capture moves."""
         return self.valid_moves(row, col)
 
+    def specialty_moves(self, row, col):
+        """Return list of valid capture_moves."""
+        return []
+
 
 class Knight(ChessPiece):
     """A knight."""
@@ -138,6 +152,10 @@ class Knight(ChessPiece):
         """Return list of valid capture moves."""
         return self.valid_moves(row, col)
 
+    def specialty_moves(self, row, col):
+        """Return list of valid capture_moves."""
+        return []
+
 
 class King(ChessPiece):
     """The king."""
@@ -161,6 +179,10 @@ class King(ChessPiece):
     def valid_capture_moves(self, row, col):
         """Return list of valid capture moves."""
         return self.valid_moves(row, col)
+
+    def specialty_moves(self, row, col):
+        """Return list of valid capture_moves."""
+        return []
 
 
 class Queen(ChessPiece):
@@ -194,3 +216,7 @@ class Queen(ChessPiece):
     def valid_capture_moves(self, row, col):
         """Return a list of valid capture moves."""
         return self.valid_moves(row, col)
+
+    def specialty_moves(self, row, col):
+        """Return list of valid capture_moves."""
+        return []

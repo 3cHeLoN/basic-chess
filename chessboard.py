@@ -66,11 +66,16 @@ class ChessBoard(object):
             else:
                 valid_moves = from_piece.valid_capture_moves(from_pos[0], from_pos[1])
         else:
+            # is this a normal move?
             valid_moves = from_piece.valid_moves(from_pos[0], from_pos[1])
 
         # check if this move corresponds to piece abilities
         if to_pos not in valid_moves:
-            return False
+            # check if this is a specialty move?
+            valid_moves = from_piece.specialty_moves(from_pos[0], from_pos[1])
+            # still not a valid (specialty) move?
+            if to_pos not in valid_moves:
+                return False
 
         # check if piece does not need to jump
         if not from_piece.may_jump:
