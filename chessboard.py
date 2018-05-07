@@ -82,6 +82,7 @@ class ChessBoard(object):
                 if not self.may_castle(from_piece.color, from_pos, to_pos):
                     return False
                 else:
+                    # raise castle flag
                     self.flag_castle = True
 
         # check if piece does not need to jump
@@ -160,6 +161,8 @@ class ChessBoard(object):
                 rook_col = to_pos[1] + np.sign(from_pos[1] - to_pos[1])
                 rook_field = self.get(from_pos[0], rook_col)
                 rook_field.set(rook)
+                # recall castle flag
+                self.flag_castle = False
 
             # get field
             from_field = self.get(from_pos[0], from_pos[1])
@@ -174,6 +177,8 @@ class ChessBoard(object):
             piece.n_moves += 1
             return True
         else:
+            # make sure castle flag is recalled
+            self.flag_castle = False
             return False
 
     def position(self, piece, position):
