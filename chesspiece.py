@@ -169,9 +169,9 @@ class King(ChessPiece):
         self.short_name = 'K'
         self.may_jump = False
         if color == 'white':
-            self.castle_fields = [(0, 1), (0, 6)]
+            self.castle_fields = [(0, 2), (0, 6)]
         else:
-            self.castle_fields = [(7, 1), (7, 6)]
+            self.castle_fields = [(7, 2), (7, 6)]
 
     def valid_moves(self, row, col):
         """Return list of valid moves."""

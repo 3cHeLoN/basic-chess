@@ -38,6 +38,7 @@ class ChessBoard(object):
         self.col_size = col_size
         self.board = [[None for j in range(row_size)] for i in range(col_size)]
         color = 'white'
+        self.flag_castle = False
         for row in range(0, 8):
             if color == 'white':
                 color = 'black'
@@ -78,8 +79,10 @@ class ChessBoard(object):
                 return False
             elif from_piece.short_name == 'K':
                 # separately handle castling
-                if not self.may_castle(from_piece, from_pos, to_pos):
+                if not self.may_castle(from_piece.color, from_pos, to_pos):
                     return False
+                else:
+                    self.flag_castle = True
 
         # check if piece does not need to jump
         if not from_piece.may_jump:
@@ -94,15 +97,23 @@ class ChessBoard(object):
 
         return True
 
-    def may_castle(self, king, from_pos, to_pos):
-        """Determines if king can castle."""
+    def may_castle(self, color, from_pos, to_pos):
+        """Determines if king with COLOR can castle."""
         # simply check if the squares are not under attack
-        if king.color == 'white':
+        if color == 'white':
             opponent_color = 'black'
+            rook_row = 0
         else:
             opponent_color = 'white'
+            rook_row = 7
 
-        import ipdb; ipdb.set_trace()
+        # obtain rook closest to to_pos
+        rook_col = np.floor(to_pos[1] / 4).astype('int') * 7
+        rook = self.get(rook_row, rook_col).get()
+        # check if rook has not moved
+        if rook is None or rook.n_moves > 0:
+            return False
+
         positions_under_attack = self.under_attack_by(opponent_color)
         
         n_steps = abs(to_pos[1] - from_pos[1])
@@ -120,12 +131,36 @@ class ChessBoard(object):
             for col in range(8):
                 piece = self.get(row, col).get()
                 if piece is not None and piece.color == color:
-                    positions.extend(piece.valid_capture_moves(row, col))
+                    positions.extend(self.legal_capture_moves((row, col)))
         return positions
+
+    def legal_capture_moves(self, from_pos):
+        """Determine legal capture moves for a certain position."""
+        valid_moves = []
+        from_row, from_col = from_pos
+        piece = self.get(from_row, from_col).get()
+        if piece is None:
+            return []
+        capture_moves = piece.valid_capture_moves(from_row, from_col)
+        for to_pos in capture_moves:
+            if self.legal_move(piece.color, from_pos, to_pos):
+                valid_moves.append(to_pos)
+        return valid_moves
 
     def move(self, color, from_pos, to_pos):
         """Move a piece."""
         if self.legal_move(color, from_pos, to_pos):
+            # chech if castle move
+            if self.flag_castle:
+                # also move corresponding rook
+                rook_col = np.floor(to_pos[1] / 4).astype('int') * 7
+                rook_field = self.get(from_pos[0], rook_col)
+                rook = rook_field.get()
+                rook_field.empty()
+                rook_col = to_pos[1] + np.sign(from_pos[1] - to_pos[1])
+                rook_field = self.get(from_pos[0], rook_col)
+                rook_field.set(rook)
+
             # get field
             from_field = self.get(from_pos[0], from_pos[1])
             to_field = self.get(to_pos[0], to_pos[1])
