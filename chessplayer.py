@@ -12,6 +12,7 @@ class ChessPlayer(object):
             raise ValueError("Unrecognized color!")
         self.color = color
         self.active_pieces = None
+        self.captured_pieces = []
         self.setup_pieces()
 
     def setup_pieces(self):
@@ -41,3 +42,7 @@ class ChessPlayer(object):
         self.active_pieces.append(King(self.color, (back_row, cols[4])))
         # add queen
         self.active_pieces.append(Queen(self.color, (back_row, cols[3])))
+
+    def inactivate_piece(self, chess_piece):
+        """Remove a captured piece."""
+        self.active_pieces.remove(chess_piece)

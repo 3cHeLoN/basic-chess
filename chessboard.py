@@ -39,6 +39,7 @@ class ChessBoard(object):
         self.board = [[None for j in range(row_size)] for i in range(col_size)]
         color = 'white'
         self.flag_castle = False
+        self.col_names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         for row in range(0, 8):
             if color == 'white':
                 color = 'black'
@@ -149,14 +150,28 @@ class ChessBoard(object):
         return valid_moves
 
     def move(self, color, from_pos, to_pos):
-        """Move a piece."""
+        """Move a piece.
+        
+        Returns notation of the move (if legal) and the captured piece.
+        If no piece was captured then the returned piece is None.
+        """
         if self.legal_move(color, from_pos, to_pos):
-            # chech if castle move
+            notation = self.get_notation(from_pos, to_pos)
+            # check if castle move
             if self.flag_castle:
                 # also move corresponding rook
                 rook_col = np.floor(to_pos[1] / 4).astype('int') * 7
                 rook_field = self.get(from_pos[0], rook_col)
                 rook = rook_field.get()
+
+                # determine queen side or king side
+                if rook_col == 0:
+                        castling_side = 'Queen side'
+                        notation = 'O-O-O'
+                else:
+                        castling_side = 'King side'
+                        notation = 'O-O'
+
                 rook_field.empty()
                 rook_col = to_pos[1] + np.sign(from_pos[1] - to_pos[1])
                 rook_field = self.get(from_pos[0], rook_col)
@@ -171,15 +186,38 @@ class ChessBoard(object):
             piece = from_field.get()
             # empty field
             from_field.empty()
+            captured_piece = to_field.get()
             # put piece to field
             to_field.set(piece)
             # increment number of moves
             piece.n_moves += 1
-            return True
+
+            return notation, captured_piece
         else:
             # make sure castle flag is recalled
             self.flag_castle = False
-            return False
+            return None, None
+
+    def fieldname(self, position):
+        """Give fieldname of position."""
+        row, col = position
+        return self.col_names[col] + str(row + 1) 
+
+    def get_notation(self, from_pos, to_pos):
+        """Get notation of move."""
+        from_piece = self.get(from_pos[0], from_pos[1]).get()
+        to_piece = self.get(to_pos[0], to_pos[1]).get()
+        
+        if from_piece.short_name == 'p':
+            notation_str = ''
+        else:
+            notation_str = from_piece.short_name 
+
+        if to_piece is not None:
+            notation_str += 'x'
+        notation_str += self.fieldname(to_pos)
+        return notation_str
+
 
     def position(self, piece, position):
         """Place a piece."""
