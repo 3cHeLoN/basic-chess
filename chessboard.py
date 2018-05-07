@@ -214,6 +214,8 @@ class ChessBoard(object):
             notation_str = from_piece.short_name 
 
         if to_piece is not None:
+            if from_piece.short_name == 'p':
+                notation_str += self.col_names[from_pos[1]]
             notation_str += 'x'
         notation_str += self.fieldname(to_pos)
         return notation_str
