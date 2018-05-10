@@ -40,6 +40,7 @@ class ChessBoard(object):
         color = 'white'
         self.flag_castle = False
         self.col_names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        self.king_positions = {'white': None, 'black': None}
         for row in range(0, 8):
             if color == 'white':
                 color = 'black'
@@ -96,6 +97,21 @@ class ChessBoard(object):
                     if self.get(from_pos[0] + row_dir * i,
                                  from_pos[1] + col_dir * i).occupied:
                         return False
+
+        '''
+        # check if king is not exposed
+        if color == 'white':
+            opponent_color = 'black'
+        else:
+            opponent_color = 'white'
+        positions_under_attack = self.under_attack_by(opponent_color)
+        if self.king_positions[color] in positions_under_attack:
+            if to_field.occupied:
+                to_piece = to_field.get()
+                if to_piece.short_name == 'K' and to_piece.color == opponent_color:
+                    return True
+            return False
+        '''
 
         return True
 
@@ -188,7 +204,20 @@ class ChessBoard(object):
             from_field.empty()
             captured_piece = to_field.get()
             # put piece to field
-            to_field.set(piece)
+            self.position(piece, to_pos)
+
+            # Check if King is not under attack
+            if piece.color == 'white':
+                opponent_color = 'black'
+            else:
+                opponent_color = 'white'
+            position_under_attack = self.under_attack_by(opponent_color)
+            if self.king_positions[piece.color] in position_under_attack:
+                print("Moves king in check!")
+                # this move was incorrect, revert it
+                self.position(piece, from_pos)
+                self.position(captured_piece, to_pos)
+                return None, None
             # increment number of moves
             piece.n_moves += 1
 
@@ -225,6 +254,11 @@ class ChessBoard(object):
         """Place a piece."""
         row, col = position
         self.board[row][col].set(piece)
+        # did the king move?
+        if piece is None:
+            self.get(row, col).occupied = False
+        elif piece.short_name == 'K':
+            self.king_positions[piece.color] = position
 
     def show(self):
         """Show self."""
