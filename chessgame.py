@@ -1,5 +1,6 @@
 """A game of chess."""
 
+from time import time
 from chessplayer import ChessPlayer
 from chessboard import ChessBoard
 
@@ -36,7 +37,6 @@ class ChessGame(object):
         if notation is None:
             return False
 
-
         # add captured piece to captured_pieces list
         if captured_piece is not None:
             self.current_player.captured_pieces.append(captured_piece)
@@ -52,6 +52,15 @@ class ChessGame(object):
         # remove captured piece from active pieces (from other player)
         if captured_piece is not None:
             self.current_player.inactivate_piece(captured_piece)
+
+        # check for check or checkmate!
+        t_0 = time()
+        check, checkmate = self.chessboard.check_or_mate(self.current_player.color)
+        print("Check(mate) test was", time() - t_0, "seconds")
+        if checkmate:
+            print("Checkmate!")
+        elif check:
+            print("Check!")
 
         self.moves += 1
         return True

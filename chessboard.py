@@ -168,9 +168,56 @@ class ChessBoard(object):
             return []
         capture_moves = piece.valid_capture_moves(from_row, from_col)
         for to_pos in capture_moves:
-            if self.legal_move(piece.color, from_pos, to_pos):
+            if self.legal_move(piece.color, from_pos, to_pos, test_check):
                 valid_moves.append(to_pos)
         return valid_moves
+
+    def check_or_mate(self, color):
+        """Test if current player in checkmate."""
+        if color == 'white':
+            opponent_color = 'black'
+        else:
+            opponent_color = 'white'
+        positions_under_attack = self.under_attack_by(opponent_color)
+
+        check = False
+        checkmate = False
+
+        king_position = self.king_positions[color]
+
+        # is king in check?
+        if king_position in positions_under_attack:
+            check = True
+            # can the king move?
+            legal_king_moves = self.legal_capture_moves(king_position, test_check=True)
+            if len(legal_king_moves) ==  0:
+                # find the attacker(s)
+                attackers = self.get_attackers(king_position)
+                if len(attackers) > 1:
+                    checmate = True
+                else:
+                    # check if we can attack the attacker
+                    attacking_positions = self.under_attack_by(color, test_check=True)
+                    if not attackers[0] in attacking_positions:
+                        checkmate = True
+        return (check, checkmate)
+
+    def get_attackers(self, position, test_check=False):
+        """Find the attacker of a certain position."""
+        piece = self.get(position[0], position[1]).get()
+        if piece.color == 'white':
+            opponent_color = 'black'
+        else:
+            opponent_color = 'white'
+        # TODO: make simpler
+        attackers = []
+        for row in range(8):
+            for col in range(8):
+                piece = self.get(row, col).get()
+                if piece is not None and piece.color == opponent_color:
+                    if position in self.legal_capture_moves((row, col)):
+                        attackers.append((row, col))
+        return attackers
 
     def move(self, color, from_pos, to_pos):
         """Move a piece.
