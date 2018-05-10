@@ -56,11 +56,18 @@ class ChessGame(object):
         # check for check or checkmate!
         t_0 = time()
         check, checkmate = self.chessboard.check_or_mate(self.current_player.color)
-        print("Check(mate) test was", time() - t_0, "seconds")
         if checkmate:
             print("Checkmate!")
         elif check:
             print("Check!")
 
+        # return state
+        if checkmate:
+            state = 3
+        elif check:
+            state = 2
+        else:
+            state = 1
+
         self.moves += 1
-        return True
+        return state

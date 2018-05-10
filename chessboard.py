@@ -1,7 +1,6 @@
 """A chess board."""
 
 import numpy as np
-from time import time
 
 
 class Field(object):
@@ -93,11 +92,10 @@ class ChessBoard(object):
             n_steps = max(abs(to_pos[0] - from_pos[0]), abs(to_pos[1] - from_pos[1]))
             row_dir = np.sign(to_pos[0] - from_pos[0])
             col_dir = np.sign(to_pos[1] - from_pos[1])
-            if n_steps > 1:
-                for i in range(1, n_steps):
-                    if self.get(from_pos[0] + row_dir * i,
-                                 from_pos[1] + col_dir * i).occupied:
-                        return False
+            for i in range(1, n_steps):
+                if self.get(from_pos[0] + row_dir * i,
+                            from_pos[1] + col_dir * i).occupied:
+                    return False
 
         # test if king will be in check
         if test_check:
@@ -194,12 +192,25 @@ class ChessBoard(object):
                 # find the attacker(s)
                 attackers = self.get_attackers(king_position)
                 if len(attackers) > 1:
-                    checmate = True
+                    checkmate = True
                 else:
                     # check if we can attack the attacker
+                    attacker = attackers[0]
                     attacking_positions = self.under_attack_by(color, test_check=True)
-                    if not attackers[0] in attacking_positions:
-                        checkmate = True
+                    if not attacker in attacking_positions:
+                        attacking_piece = self.get(attacker[0], attacker[1]).get()
+                        if attacking_piece.may_jump:
+                            checkmate = True
+                        else:
+                            # see if any fields are under attack
+                            n_steps = max(abs(king_position[0] - attacker[0]), abs(king_position[1] - attacker[1]))
+                            row_dir = np.sign(king_position[0] - attacker[0])
+                            col_dir = np.sign(king_position[1] - attacker[1])
+                            checkmate = True
+                            for i in range(1, n_steps):
+                                if (attacker[0] + row_dir * i,
+                                    attacker[1] + col_dir * i) in attacking_positions:
+                                    checkmate = False
         return (check, checkmate)
 
     def get_attackers(self, position, test_check=False):
@@ -225,7 +236,6 @@ class ChessBoard(object):
         Returns notation of the move (if legal) and the captured piece.
         If no piece was captured then the returned piece is None.
         """
-        t_0 = time()
         if self.legal_move(color, from_pos, to_pos, test_check=True):
             notation = self.get_notation(from_pos, to_pos)
             # check if castle move
@@ -263,7 +273,6 @@ class ChessBoard(object):
             # increment number of moves
             piece.n_moves += 1
 
-            print("Move took", time() - t_0, "seconds")
             return notation, captured_piece
         else:
             # make sure castle flag is recalled
