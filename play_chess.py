@@ -43,8 +43,12 @@ class ChessApp:
         self.sprites['R_black'] = load_image('img/rook_black.png')
         self.sprites['p_black'] = load_image('img/pawn_black.png')
 
+        self.sprites['Check'] = load_image('img/check.png')
+
         self.black_highlight = (232, 158, 15)
         self.white_highlight = (255, 208, 21) 
+
+        self.check = False
 
     def draw_board(self, highlight_fields=None):
         # get current setup
@@ -53,6 +57,12 @@ class ChessApp:
         # show checkerboard
         self.screen.fill((255, 64, 64))
         self.screen.blit(self.sprites['board'], Rect(0,0,640,640))
+
+        if self.check:
+            # get current king position
+            king_position = board.king_positions[self.game.current_player.color]
+        else:
+            king_position = None
 
         # fill in highlighted fields
         if highlight_fields is not None:
@@ -71,6 +81,9 @@ class ChessApp:
                 field = board.get(row, col)
                 if field.occupied:
                     piece = field.get()
+                    if (row, col) == king_position:
+                        self.screen.blit(self.sprites['Check'],
+                                Rect(col * 80, 560 - row * 80, 80, 80))
                     self.screen.blit(self.sprites[piece.short_name + '_' + piece.color],
                                 Rect(col * 80, 560 - row * 80, 80, 80))
 
@@ -88,6 +101,7 @@ class ChessApp:
         board = self.game.get_board()
         highlighted_fields = []
         current_mode = 0
+        state = 0
         while True:
             ev = pygame.event.get()
             # proceed events
@@ -105,17 +119,19 @@ class ChessApp:
                                 from_row = clicked_row
                                 from_col = clicked_col
                                 highlighted_fields.append((clicked_row, clicked_col))
-                                #moves = piece.valid_moves(from_row, from_col)
-                                #for move in moves:
-                                #    highlighted_fields.append(move)
                                 self.draw_board(highlighted_fields)
                                 current_mode = 1
                     elif current_mode == 1:
                         # deselect piece?
                         if not (clicked_row == from_row and clicked_col == from_col):
-                            if not self.game.move((from_row, from_col),
-                                    (clicked_row, clicked_col)):
+                            state = self.game.move((from_row, from_col),
+                                    (clicked_row, clicked_col))
+                            if state == 0:
                                 continue
+                            elif state == 2:
+                                self.check = True
+                            else:
+                                self.check = False
                         highlighted_fields = []
                         current_mode = 0
                         self.draw_board(highlighted_fields)

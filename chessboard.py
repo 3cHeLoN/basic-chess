@@ -247,11 +247,11 @@ class ChessBoard(object):
 
                 # determine queen side or king side
                 if rook_col == 0:
-                        castling_side = 'Queen side'
-                        notation = 'O-O-O'
+                    castling_side = 'Queen side'
+                    notation = 'O-O-O'
                 else:
-                        castling_side = 'King side'
-                        notation = 'O-O'
+                    castling_side = 'King side'
+                    notation = 'O-O'
 
                 rook_field.empty()
                 rook_col = to_pos[1] + np.sign(from_pos[1] - to_pos[1])
