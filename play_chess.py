@@ -1,4 +1,5 @@
 """Play chess in terminal."""
+import sys
 import pygame
 from pygame.locals import *
 from chessgame import ChessGame
@@ -118,6 +119,10 @@ class ChessApp:
                         highlighted_fields = []
                         current_mode = 0
                         self.draw_board(highlighted_fields)
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
     
     @staticmethod
     def position_to_field(pos):

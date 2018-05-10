@@ -1,6 +1,7 @@
 """A chess board."""
 
 import numpy as np
+from time import time
 
 
 class Field(object):
@@ -56,39 +57,39 @@ class ChessBoard(object):
     def get(self, row, col):
         return self.board[row][col]
 
-    def legal_move(self, color, from_pos, to_pos):
+    def legal_move(self, color, from_pos, to_pos, test_check=False):
         """Check if move is legal."""
         # first check if piece at target is not the same color
         from_field = self.get(from_pos[0], from_pos[1])
         to_field = self.get(to_pos[0], to_pos[1])
-        from_piece = from_field.get()
+        piece = from_field.get()
         if to_field.occupied:
             to_piece = to_field.get()
             if to_piece.color == color:
                 return False
             else:
-                valid_moves = from_piece.valid_capture_moves(from_pos[0], from_pos[1])
+                valid_moves = piece.valid_capture_moves(from_pos[0], from_pos[1])
         else:
             # is this a normal move?
-            valid_moves = from_piece.valid_moves(from_pos[0], from_pos[1])
+            valid_moves = piece.valid_moves(from_pos[0], from_pos[1])
 
         # check if this move corresponds to piece abilities
         if to_pos not in valid_moves:
             # check if this is a specialty move?
-            valid_moves = from_piece.specialty_moves(from_pos[0], from_pos[1])
+            valid_moves = piece.specialty_moves(from_pos[0], from_pos[1])
             # still not a valid (specialty) move?
             if to_pos not in valid_moves:
                 return False
-            elif from_piece.short_name == 'K':
+            elif piece.short_name == 'K':
                 # separately handle castling
-                if not self.may_castle(from_piece.color, from_pos, to_pos):
+                if not self.may_castle(piece.color, from_pos, to_pos):
                     return False
                 else:
                     # raise castle flag
                     self.flag_castle = True
 
         # check if piece does not need to jump
-        if not from_piece.may_jump:
+        if not piece.may_jump:
             n_steps = max(abs(to_pos[0] - from_pos[0]), abs(to_pos[1] - from_pos[1]))
             row_dir = np.sign(to_pos[0] - from_pos[0])
             col_dir = np.sign(to_pos[1] - from_pos[1])
@@ -98,20 +99,26 @@ class ChessBoard(object):
                                  from_pos[1] + col_dir * i).occupied:
                         return False
 
-        '''
-        # check if king is not exposed
-        if color == 'white':
-            opponent_color = 'black'
-        else:
-            opponent_color = 'white'
-        positions_under_attack = self.under_attack_by(opponent_color)
-        if self.king_positions[color] in positions_under_attack:
-            if to_field.occupied:
-                to_piece = to_field.get()
-                if to_piece.short_name == 'K' and to_piece.color == opponent_color:
-                    return True
-            return False
-        '''
+        # test if king will be in check
+        if test_check:
+            if piece.color == 'white':
+                opponent_color = 'black'
+            else:
+                opponent_color = 'white'
+            # attempt the move
+            to_piece = to_field.get()
+            self.position(piece, to_pos)
+            from_field.empty()
+            positions_under_attack = self.under_attack_by(opponent_color)
+            if self.king_positions[piece.color] in positions_under_attack:
+                # undo move
+                self.position(piece, from_pos)
+                self.position(to_piece, to_pos)
+                return False
+            else:
+                # undo move
+                self.position(piece, from_pos)
+                self.position(to_piece, to_pos)
 
         return True
 
@@ -141,7 +148,7 @@ class ChessBoard(object):
                 return False
         return True
 
-    def under_attack_by(self, color):
+    def under_attack_by(self, color, test_check=False):
         """Return list of positions under attack."""
         positions = []
 
@@ -149,10 +156,10 @@ class ChessBoard(object):
             for col in range(8):
                 piece = self.get(row, col).get()
                 if piece is not None and piece.color == color:
-                    positions.extend(self.legal_capture_moves((row, col)))
+                    positions.extend(self.legal_capture_moves((row, col), test_check))
         return positions
 
-    def legal_capture_moves(self, from_pos):
+    def legal_capture_moves(self, from_pos, test_check=False):
         """Determine legal capture moves for a certain position."""
         valid_moves = []
         from_row, from_col = from_pos
@@ -171,7 +178,8 @@ class ChessBoard(object):
         Returns notation of the move (if legal) and the captured piece.
         If no piece was captured then the returned piece is None.
         """
-        if self.legal_move(color, from_pos, to_pos):
+        t_0 = time()
+        if self.legal_move(color, from_pos, to_pos, test_check=True):
             notation = self.get_notation(from_pos, to_pos)
             # check if castle move
             if self.flag_castle:
@@ -205,22 +213,10 @@ class ChessBoard(object):
             captured_piece = to_field.get()
             # put piece to field
             self.position(piece, to_pos)
-
-            # Check if King is not under attack
-            if piece.color == 'white':
-                opponent_color = 'black'
-            else:
-                opponent_color = 'white'
-            position_under_attack = self.under_attack_by(opponent_color)
-            if self.king_positions[piece.color] in position_under_attack:
-                print("Moves king in check!")
-                # this move was incorrect, revert it
-                self.position(piece, from_pos)
-                self.position(captured_piece, to_pos)
-                return None, None
             # increment number of moves
             piece.n_moves += 1
 
+            print("Move took", time() - t_0, "seconds")
             return notation, captured_piece
         else:
             # make sure castle flag is recalled
@@ -248,7 +244,6 @@ class ChessBoard(object):
             notation_str += 'x'
         notation_str += self.fieldname(to_pos)
         return notation_str
-
 
     def position(self, piece, position):
         """Place a piece."""
