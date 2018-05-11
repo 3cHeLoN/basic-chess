@@ -16,5 +16,11 @@
     "filename": "chessboard3.png",
     "highlight_color_light": [144, 255, 181],
     "highlight_color_dark": [37, 167, 241]
+  },
+  "Theme4": {
+    "name": "Smart",
+    "filename": "chessboard4.png",
+    "highlight_color_light": [255, 208, 21, 128],
+    "highlight_color_dark": [232, 158, 15, 128]
   }
 }

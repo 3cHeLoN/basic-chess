@@ -56,6 +56,8 @@ class ChessApp:
         self.white_highlight = theme_data['highlight_color_light']
         self.black_highlight = theme_data['highlight_color_dark']
 
+        self.overlay = pygame.Surface((SCREENRECT.size), pygame.SRCALPHA)
+
         self.check = 0
         self.turn_board = False
 
@@ -66,6 +68,7 @@ class ChessApp:
         # show checkerboard
         self.screen.fill((255, 64, 64))
         self.screen.blit(self.sprites['board'], Rect(0,0,640,640))
+        self.overlay.fill((0, 0, 0, 0))
 
         if self.check:
             # get current king position
@@ -83,11 +86,12 @@ class ChessApp:
                 else:
                     pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
                 if field.color == 'white':
-                    self.screen.fill(self.white_highlight, 
+                    self.overlay.fill(self.white_highlight, 
                             pos_rect)
                 else:
-                    self.screen.fill(self.black_highlight, 
+                    self.overlay.fill(self.black_highlight, 
                             pos_rect)
+            self.screen.blit(self.overlay, (0, 0))
 
         for row in range(board.col_size):
             for col in range(board.row_size):
@@ -172,10 +176,9 @@ class ChessApp:
         else:
             row = int((640 - pos[1]) / 80)
             col = int(pos[0] / 80)
-        print("Clicked at", row, col)
         return (row, col)
 
 if __name__ == '__main__':
-    app = ChessApp("Theme3")
+    app = ChessApp("Theme4")
     app.run()
     sleep(10)
