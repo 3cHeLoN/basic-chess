@@ -157,6 +157,17 @@ class ChessBoard(object):
                     positions.extend(self.legal_capture_moves((row, col), test_check))
         return positions
 
+    def reachable_positions(self, color, test_check=False):
+        """Return list of reachable positions."""
+        positions = []
+
+        for row in range(8):
+            for col in range(8):
+                piece = self.get(row, col).get()
+                if piece is not None and piece.color == color:
+                    positions.extend(self.legal_moves((row, col), test_check))
+        return positions
+
     def legal_capture_moves(self, from_pos, test_check=False):
         """Determine legal capture moves for a certain position."""
         valid_moves = []
@@ -166,6 +177,20 @@ class ChessBoard(object):
             return []
         capture_moves = piece.valid_capture_moves(from_row, from_col)
         for to_pos in capture_moves:
+            if self.legal_move(piece.color, from_pos, to_pos, test_check):
+                valid_moves.append(to_pos)
+        return valid_moves
+
+    # TODO: This and above functions could be combined
+    def legal_moves(self, from_pos, test_check=False):
+        """Determine legal moves for a certain position."""
+        valid_moves = []
+        from_row, from_col = from_pos
+        piece = self.get(from_row, from_col).get()
+        if piece is None:
+            return []
+        moves = piece.valid_moves(from_row, from_col)
+        for to_pos in moves:
             if self.legal_move(piece.color, from_pos, to_pos, test_check):
                 valid_moves.append(to_pos)
         return valid_moves
@@ -202,6 +227,7 @@ class ChessBoard(object):
                         if attacking_piece.may_jump:
                             checkmate = True
                         else:
+                            reachable_positions = self.reachable_positions(color, test_check=True)
                             # see if any fields are under attack
                             n_steps = max(abs(king_position[0] - attacker[0]), abs(king_position[1] - attacker[1]))
                             row_dir = np.sign(king_position[0] - attacker[0])
@@ -209,7 +235,7 @@ class ChessBoard(object):
                             checkmate = True
                             for i in range(1, n_steps):
                                 if (attacker[0] + row_dir * i,
-                                    attacker[1] + col_dir * i) in attacking_positions:
+                                    attacker[1] + col_dir * i) in reachable_positions:
                                     checkmate = False
         return (check, checkmate)
 
