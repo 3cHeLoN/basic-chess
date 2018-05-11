@@ -1,0 +1,20 @@
+{
+  "Theme1": {
+    "name": "Standard",
+    "filename": "chessboard1.png",
+    "highlight_color_light": [255, 208, 21],
+    "highlight_color_dark": [232, 158, 15]
+  },
+  "Theme2": {
+    "name": "Smart",
+    "filename": "chessboard2.png",
+    "highlight_color_light": [217, 91, 67],
+    "highlight_color_dark": [192, 41, 66]
+  },
+  "Theme3": {
+    "name": "Smart",
+    "filename": "chessboard3.png",
+    "highlight_color_light": [144, 255, 181],
+    "highlight_color_dark": [37, 167, 241]
+  }
+}

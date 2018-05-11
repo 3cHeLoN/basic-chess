@@ -1,6 +1,7 @@
 """Play chess in terminal."""
 import sys
 import pygame
+import json
 from pygame.locals import *
 from chessgame import ChessGame
 from time import sleep
@@ -19,13 +20,18 @@ class ChessApp:
 
     sprites = {}
     
-    def __init__(self, winstyle=0):
+    def __init__(self, theme="Theme1", winstyle=0):
         pygame.init()
         best_depth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
         self.screen = pygame.display.set_mode(SCREENRECT.size, winstyle, best_depth)
+        
+        with open("img/themes.json", 'r') as fh:
+            theme_data = json.load(fh)
+
+        theme_data = theme_data[theme]
 
         # chess board
-        self.sprites['board'] = load_image('img/chessboard.png')
+        self.sprites['board'] = load_image('img/' + theme_data['filename'])
 
         # white pieces
         self.sprites['K_white'] = load_image('img/king_white.png')
@@ -47,10 +53,11 @@ class ChessApp:
 
         self.sprites['Check'] = load_image('img/check.png')
 
-        self.black_highlight = (232, 158, 15)
-        self.white_highlight = (255, 208, 21) 
+        self.white_highlight = theme_data['highlight_color_light']
+        self.black_highlight = theme_data['highlight_color_dark']
 
         self.check = 0
+        self.turn_board = False
 
     def draw_board(self, highlight_fields=None):
         # get current setup
@@ -71,28 +78,36 @@ class ChessApp:
             for field_pos in highlight_fields:
                 row, col = field_pos
                 field = board.get(row, col)
+                if self.turn_board and self.game.current_player.color == 'black':
+                    pos_rect = Rect(560 - col *80, row * 80, 80, 80)
+                else:
+                    pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
                 if field.color == 'white':
                     self.screen.fill(self.white_highlight, 
-                                     Rect(col * 80, 560 - row * 80, 80, 80))
+                            pos_rect)
                 else:
                     self.screen.fill(self.black_highlight, 
-                                     Rect(col * 80, 560 - row * 80, 80, 80))
+                            pos_rect)
 
         for row in range(board.col_size):
             for col in range(board.row_size):
                 field = board.get(row, col)
                 if field.occupied:
                     piece = field.get()
+                    if self.turn_board and self.game.current_player.color == 'black':
+                        pos_rect = Rect(560 - col *80, row * 80, 80, 80)
+                    else:
+                        pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
                     if (row, col) == king_position:
                         if self.check == 2:
                             self.screen.blit(self.sprites['Check'],
-                                Rect(col * 80, 560 - row * 80, 80, 80))
+                                pos_rect)
                         elif self.check == 3:
                             self.screen.blit(self.sprites['DK_' + piece.color],
-                                Rect(col * 80, 560 - row * 80, 80, 80))
+                                pos_rect)
                             continue
                     self.screen.blit(self.sprites[piece.short_name + '_' + piece.color],
-                                Rect(col * 80, 560 - row * 80, 80, 80))
+                            pos_rect)
 
         pygame.display.flip()
 
@@ -115,9 +130,10 @@ class ChessApp:
             for event in ev:
                 # handle MOUSEBUTTONUP
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    inverted = self.turn_board and self.game.current_player.color == 'black'
                     pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONUP:
-                    clicked_row, clicked_col = self.position_to_field(pos)
+                    clicked_row, clicked_col = self.position_to_field(pos, inverted)
                     field = board.get(clicked_row, clicked_col)
                     if current_mode == 0:
                         if field.occupied:
@@ -148,13 +164,18 @@ class ChessApp:
                 sys.exit()
     
     @staticmethod
-    def position_to_field(pos):
+    def position_to_field(pos, inverted):
         """Determine field based on position."""
-        row = int((640 - pos[1]) / 80)
-        col = int(pos[0] / 80)
+        if inverted:
+            row = int(pos[1] / 80)
+            col = int((640 - pos[0]) / 80)
+        else:
+            row = int((640 - pos[1]) / 80)
+            col = int(pos[0] / 80)
+        print("Clicked at", row, col)
         return (row, col)
 
 if __name__ == '__main__':
-    app = ChessApp()
+    app = ChessApp("Theme3")
     app.run()
     sleep(10)
