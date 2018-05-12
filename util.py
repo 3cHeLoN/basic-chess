@@ -1,9 +1,9 @@
 """Chess utility functions"""
 
 
-def on_board(row, col):
+def on_board(position):
     """Check if position is on board."""
-    return (0 <= row < 8) and (0 <= col < 8)
+    return (0 <= position[0] < 8) and (0 <= position[1] < 8)
 
 def filter_moves(moves):
     """Remove moves that go from board."""

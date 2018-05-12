@@ -53,29 +53,38 @@ class ChessBoard(object):
                 else:
                     color = 'black'
 
-    def get(self, row, col):
-        return self.board[row][col]
+    def get(self, position):
+        return self.board[position[0]][position[1]]
+
+    def set(self, piece, position):
+        """Place a piece."""
+        self.board[position[0]][position[1]].set(piece)
+        # did the king move?
+        if piece is None:
+            self.get(position).occupied = False
+        elif piece.short_name == 'K':
+            self.king_positions[piece.color] = position
 
     def legal_move(self, color, from_pos, to_pos, test_check=False):
         """Check if move is legal."""
         # first check if piece at target is not the same color
-        from_field = self.get(from_pos[0], from_pos[1])
-        to_field = self.get(to_pos[0], to_pos[1])
+        from_field = self.get(from_pos)
+        to_field = self.get(to_pos)
         piece = from_field.get()
         if to_field.occupied:
             to_piece = to_field.get()
             if to_piece.color == color:
                 return False
             else:
-                valid_moves = piece.valid_capture_moves(from_pos[0], from_pos[1])
+                valid_moves = piece.valid_capture_moves(from_pos)
         else:
             # is this a normal move?
-            valid_moves = piece.valid_moves(from_pos[0], from_pos[1])
+            valid_moves = piece.valid_moves(from_pos)
 
         # check if this move corresponds to piece abilities
         if to_pos not in valid_moves:
             # check if this is a specialty move?
-            valid_moves = piece.specialty_moves(from_pos[0], from_pos[1])
+            valid_moves = piece.specialty_moves(from_pos)
             # still not a valid (specialty) move?
             if to_pos not in valid_moves:
                 return False
@@ -93,8 +102,8 @@ class ChessBoard(object):
             row_dir = np.sign(to_pos[0] - from_pos[0])
             col_dir = np.sign(to_pos[1] - from_pos[1])
             for i in range(1, n_steps):
-                if self.get(from_pos[0] + row_dir * i,
-                            from_pos[1] + col_dir * i).occupied:
+                if self.get((from_pos[0] + row_dir * i,
+                            from_pos[1] + col_dir * i)).occupied:
                     return False
 
         # test if king will be in check
@@ -105,18 +114,18 @@ class ChessBoard(object):
                 opponent_color = 'white'
             # attempt the move
             to_piece = to_field.get()
-            self.position(piece, to_pos)
+            self.set(piece, to_pos)
             from_field.empty()
             positions_under_attack = self.under_attack_by(opponent_color)
             if self.king_positions[piece.color] in positions_under_attack:
                 # undo move
-                self.position(piece, from_pos)
-                self.position(to_piece, to_pos)
+                self.set(piece, from_pos)
+                self.set(to_piece, to_pos)
                 return False
             else:
                 # undo move
-                self.position(piece, from_pos)
-                self.position(to_piece, to_pos)
+                self.set(piece, from_pos)
+                self.set(to_piece, to_pos)
 
         return True
 
@@ -132,7 +141,7 @@ class ChessBoard(object):
 
         # obtain rook closest to to_pos
         rook_col = np.floor(to_pos[1] / 4).astype('int') * 7
-        rook = self.get(rook_row, rook_col).get()
+        rook = self.get((rook_row, rook_col)).get()
         # check if rook has not moved
         if rook is None or rook.n_moves > 0:
             return False
@@ -152,7 +161,7 @@ class ChessBoard(object):
 
         for row in range(8):
             for col in range(8):
-                piece = self.get(row, col).get()
+                piece = self.get((row, col)).get()
                 if piece is not None and piece.color == color:
                     positions.extend(self.legal_capture_moves((row, col), test_check))
         return positions
@@ -163,7 +172,7 @@ class ChessBoard(object):
 
         for row in range(8):
             for col in range(8):
-                piece = self.get(row, col).get()
+                piece = self.get((row, col)).get()
                 if piece is not None and piece.color == color:
                     positions.extend(self.legal_moves((row, col), test_check))
         return positions
@@ -171,11 +180,10 @@ class ChessBoard(object):
     def legal_capture_moves(self, from_pos, test_check=False):
         """Determine legal capture moves for a certain position."""
         valid_moves = []
-        from_row, from_col = from_pos
-        piece = self.get(from_row, from_col).get()
+        piece = self.get(from_pos).get()
         if piece is None:
             return []
-        capture_moves = piece.valid_capture_moves(from_row, from_col)
+        capture_moves = piece.valid_capture_moves(from_pos)
         for to_pos in capture_moves:
             if self.legal_move(piece.color, from_pos, to_pos, test_check):
                 valid_moves.append(to_pos)
@@ -185,11 +193,10 @@ class ChessBoard(object):
     def legal_moves(self, from_pos, test_check=False):
         """Determine legal moves for a certain position."""
         valid_moves = []
-        from_row, from_col = from_pos
-        piece = self.get(from_row, from_col).get()
+        piece = self.get(from_pos).get()
         if piece is None:
             return []
-        moves = piece.valid_moves(from_row, from_col)
+        moves = piece.valid_moves(from_pos)
         for to_pos in moves:
             if self.legal_move(piece.color, from_pos, to_pos, test_check):
                 valid_moves.append(to_pos)
@@ -220,28 +227,28 @@ class ChessBoard(object):
                     checkmate = True
                 else:
                     # check if we can attack the attacker
-                    attacker = attackers[0]
+                    attacker_position = attackers[0]
                     attacking_positions = self.under_attack_by(color, test_check=True)
-                    if not attacker in attacking_positions:
-                        attacking_piece = self.get(attacker[0], attacker[1]).get()
+                    if not attacker_position in attacking_positions:
+                        attacking_piece = self.get(attacker_position).get()
                         if attacking_piece.may_jump:
                             checkmate = True
                         else:
                             reachable_positions = self.reachable_positions(color, test_check=True)
                             # see if any fields are under attack
-                            n_steps = max(abs(king_position[0] - attacker[0]), abs(king_position[1] - attacker[1]))
-                            row_dir = np.sign(king_position[0] - attacker[0])
-                            col_dir = np.sign(king_position[1] - attacker[1])
+                            n_steps = max(abs(king_position[0] - attacker_position[0]), abs(king_position[1] - attacker_position[1]))
+                            row_dir = np.sign(king_position[0] - attacker_position[0])
+                            col_dir = np.sign(king_position[1] - attacker_position[1])
                             checkmate = True
                             for i in range(1, n_steps):
-                                if (attacker[0] + row_dir * i,
-                                    attacker[1] + col_dir * i) in reachable_positions:
+                                if (attacker_position[0] + row_dir * i,
+                                    attacker_position[1] + col_dir * i) in reachable_positions:
                                     checkmate = False
         return (check, checkmate)
 
     def get_attackers(self, position, test_check=False):
         """Find the attacker of a certain position."""
-        piece = self.get(position[0], position[1]).get()
+        piece = self.get(position).get()
         if piece.color == 'white':
             opponent_color = 'black'
         else:
@@ -250,7 +257,7 @@ class ChessBoard(object):
         attackers = []
         for row in range(8):
             for col in range(8):
-                piece = self.get(row, col).get()
+                piece = self.get((row, col)).get()
                 if piece is not None and piece.color == opponent_color:
                     if position in self.legal_capture_moves((row, col)):
                         attackers.append((row, col))
@@ -287,15 +294,15 @@ class ChessBoard(object):
                 self.flag_castle = False
 
             # get field
-            from_field = self.get(from_pos[0], from_pos[1])
-            to_field = self.get(to_pos[0], to_pos[1])
+            from_field = self.get(from_pos)
+            to_field = self.get(to_pos)
             # get piece
             piece = from_field.get()
             # empty field
             from_field.empty()
             captured_piece = to_field.get()
             # put piece to field
-            self.position(piece, to_pos)
+            self.set(piece, to_pos)
             # increment number of moves
             piece.n_moves += 1
 
@@ -312,8 +319,8 @@ class ChessBoard(object):
 
     def get_notation(self, from_pos, to_pos):
         """Get notation of move."""
-        from_piece = self.get(from_pos[0], from_pos[1]).get()
-        to_piece = self.get(to_pos[0], to_pos[1]).get()
+        from_piece = self.get(from_pos).get()
+        to_piece = self.get(to_pos).get()
         
         if from_piece.short_name == 'p':
             notation_str = ''
@@ -326,16 +333,6 @@ class ChessBoard(object):
             notation_str += 'x'
         notation_str += self.fieldname(to_pos)
         return notation_str
-
-    def position(self, piece, position):
-        """Place a piece."""
-        row, col = position
-        self.board[row][col].set(piece)
-        # did the king move?
-        if piece is None:
-            self.get(row, col).occupied = False
-        elif piece.short_name == 'K':
-            self.king_positions[piece.color] = position
 
     def show(self):
         """Show self."""

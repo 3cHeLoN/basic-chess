@@ -67,7 +67,7 @@ class ChessApp:
 
         # show checkerboard
         self.screen.fill((255, 64, 64))
-        self.screen.blit(self.sprites['board'], Rect(0,0,640,640))
+        self.screen.blit(self.sprites['board'], Rect(0, 0, 640, 640))
         self.overlay.fill((0, 0, 0, 0))
 
         if self.check:
@@ -80,7 +80,7 @@ class ChessApp:
         if highlight_fields is not None:
             for field_pos in highlight_fields:
                 row, col = field_pos
-                field = board.get(row, col)
+                field = board.get((row, col))
                 if self.turn_board and self.game.current_player.color == 'black':
                     pos_rect = Rect(560 - col *80, row * 80, 80, 80)
                 else:
@@ -95,7 +95,7 @@ class ChessApp:
 
         for row in range(board.col_size):
             for col in range(board.row_size):
-                field = board.get(row, col)
+                field = board.get((row, col))
                 if field.occupied:
                     piece = field.get()
                     if self.turn_board and self.game.current_player.color == 'black':
@@ -138,7 +138,7 @@ class ChessApp:
                     pos = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONUP:
                     clicked_row, clicked_col = self.position_to_field(pos, inverted)
-                    field = board.get(clicked_row, clicked_col)
+                    field = board.get((clicked_row, clicked_col))
                     if current_mode == 0:
                         if field.occupied:
                             piece = field.get()

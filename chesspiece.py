@@ -44,24 +44,27 @@ class Pawn(ChessPiece):
         else:
             self.direction = -1
 
-    def valid_moves(self, row, col):
+    def valid_moves(self, position):
         """Return list of valid moves."""
+        row, col = position
         moves = []
-        if on_board(row + self.direction, col):
+        if on_board((row + self.direction, col)):
             moves.append((row + self.direction, col))
         return moves
 
-    def valid_capture_moves(self, row, col):
+    def valid_capture_moves(self, position):
         """Return list of valid capture moves."""
+        row, col = position
         capture_moves = []
-        if on_board(row + self.direction, col - 1):
+        if on_board((row + self.direction, col - 1)):
             capture_moves.append((row + self.direction, col - 1))
-        if on_board(row + self.direction, col + 1):
+        if on_board((row + self.direction, col + 1)):
             capture_moves.append((row + self.direction, col + 1))
         return capture_moves
 
-    def specialty_moves(self, row, col):
+    def specialty_moves(self, position):
         """Return list of valid capture_moves."""
+        row, col = position
         if row == self.initial_position[0]:
             return [(row + self.direction * 2, col)]
         return []
@@ -78,19 +81,20 @@ class Rook(ChessPiece):
         self.short_name = 'R'
         self.may_jump = False
 
-    def valid_moves(self, row, col):
+    def valid_moves(self, position):
         """Return list of valid moves."""
+        row, col = position
         # add current column
         moves = [(i, col) for i in range(8) if i != row]
         # add current row
         moves.extend([(row, i) for i in range(8) if i != col])
         return moves
 
-    def valid_capture_moves(self, row, col):
+    def valid_capture_moves(self, position):
         """Return list of valid capture moves."""
-        return self.valid_moves(row, col)
+        return self.valid_moves(position)
 
-    def specialty_moves(self, row, col):
+    def specialty_moves(self, position):
         """Return list of valid capture_moves."""
         return []
 
@@ -106,8 +110,9 @@ class Bishop(ChessPiece):
         self.short_name = 'B'
         self.may_jump = False
 
-    def valid_moves(self, row, col):
+    def valid_moves(self, position):
         """Return list of valid moves."""
+        row, col = position
         # add first diagonal
         moves = [(row + i, col + i)
                  for i in range(-min(row, col), min(8 - row, 8 - col))
@@ -119,11 +124,11 @@ class Bishop(ChessPiece):
              if i != 0])
         return moves
 
-    def valid_capture_moves(self, row, col):
+    def valid_capture_moves(self, position):
         """Return a list of valid capture moves."""
-        return self.valid_moves(row, col)
+        return self.valid_moves(position)
 
-    def specialty_moves(self, row, col):
+    def specialty_moves(self, position):
         """Return list of valid capture_moves."""
         return []
 
@@ -139,21 +144,22 @@ class Knight(ChessPiece):
         self.short_name = 'N'
         self.may_jump = True
 
-    def valid_moves(self, row, col):
+    def valid_moves(self, position):
         """Return list of valid moves."""
+        row, col = position
         moves = [(row + i, col + j)
                  for i in [-1, 1] for j in [-2, 2]
-                 if on_board(row + i, col + j)]
+                 if on_board((row + i, col + j))]
         moves.extend([(row + i, col + j)
                       for i in [-2, 2] for j in [-1, 1]
-                      if on_board(row + i, col + j)])
+                      if on_board((row + i, col + j))])
         return moves
 
-    def valid_capture_moves(self, row, col):
+    def valid_capture_moves(self, position):
         """Return list of valid capture moves."""
-        return self.valid_moves(row, col)
+        return self.valid_moves(position)
 
-    def specialty_moves(self, row, col):
+    def specialty_moves(self, position):
         """Return list of valid capture_moves."""
         return []
 
@@ -173,19 +179,20 @@ class King(ChessPiece):
         else:
             self.castle_fields = [(7, 2), (7, 6)]
 
-    def valid_moves(self, row, col):
+    def valid_moves(self, position):
         """Return list of valid moves."""
+        row, col = position
         moves = [(row + i, col + j)
                  for i in range(-min(1, row), min(2, 8 - row))
                  for j in range(-min(1, col), min(2, 8 - col))
                  if (i != 0 or j != 0)]
         return moves
 
-    def valid_capture_moves(self, row, col):
+    def valid_capture_moves(self, position):
         """Return list of valid capture moves."""
-        return self.valid_moves(row, col)
+        return self.valid_moves(position)
 
-    def specialty_moves(self, row, col):
+    def specialty_moves(self, position):
         """Return list of valid capture_moves."""
         if self.n_moves > 0:
             return []
@@ -204,8 +211,9 @@ class Queen(ChessPiece):
         self.short_name = 'Q'
         self.may_jump = False
 
-    def valid_moves(self, row, col):
+    def valid_moves(self, position):
         """Return list of valid moves."""
+        row, col = position
         # add first diagonal
         moves = [(row + i, col + i)
                  for i in range(-min(row, col), min(8 - row, 8 - col))
@@ -221,10 +229,10 @@ class Queen(ChessPiece):
         moves.extend([(row, i) for i in range(8) if i != col])
         return moves
 
-    def valid_capture_moves(self, row, col):
+    def valid_capture_moves(self, position):
         """Return a list of valid capture moves."""
-        return self.valid_moves(row, col)
+        return self.valid_moves(position)
 
-    def specialty_moves(self, row, col):
+    def specialty_moves(self, position):
         """Return list of valid capture_moves."""
         return []

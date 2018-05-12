@@ -22,7 +22,7 @@ class ChessGame(object):
         """Initialize the board."""
         for player in [self.player_white, self.player_black]:
             for piece in player.active_pieces:
-                self.chessboard.position(piece, piece.initial_position)
+                self.chessboard.set(piece, piece.initial_position)
 
     def print_board(self):
         self.chessboard.show()
@@ -31,7 +31,9 @@ class ChessGame(object):
         return self.chessboard
 
     def move(self, from_pos, to_pos):
+        t_0 = time()
         notation, captured_piece = self.chessboard.move(self.current_player.color, from_pos, to_pos)
+        print("The move took", time() - t_0)
 
         # an illegal move was performed
         if notation is None:
