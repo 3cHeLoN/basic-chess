@@ -60,6 +60,8 @@ class ChessApp:
 
         self.check = 0
         self.turn_board = False
+        self.promotion_pieces = {0: 'Queen', 1: 'Rook', 2: 'Bishop', 3: 'Knight'}
+        self.selected_promotion_piece = 0
 
     def draw_board(self, highlight_fields=None):
         # get current setup
@@ -134,8 +136,22 @@ class ChessApp:
             for event in ev:
                 # handle MOUSEBUTTONUP
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    inverted = self.turn_board and self.game.current_player.color == 'black'
                     pos = pygame.mouse.get_pos()
+                    if current_mode == 2:
+                        if event.button == 4:
+                            self.selected_promotion_piece = (self.selected_promotion_piece + 1) % 4
+                            self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
+                            print("selected promotion:", self.promotion_pieces[self.selected_promotion_piece])
+                        elif event.button == 5:
+                            self.selected_promotion_piece = (self.selected_promotion_piece - 1) % 4
+                            self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
+                            print("selected promotion:", self.promotion_pieces[self.selected_promotion_piece])
+                        elif event.button == 1:
+                            current_mode = 0
+                        self.draw_board()
+                    elif event.button == 1:
+                        inverted = self.turn_board and self.game.current_player.color == 'black'
+
                 if event.type == pygame.MOUSEBUTTONUP:
                     clicked_row, clicked_col = self.position_to_field(pos, inverted)
                     field = board.get((clicked_row, clicked_col))
@@ -157,6 +173,14 @@ class ChessApp:
                                 continue
                             elif state == 1:
                                 self.check = 0
+                            elif state == 4:
+                                # choose promotion
+                                current_mode = 2
+                                self.selected_promotion_piece = 0
+                                self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
+                                highlighted_fields = []
+                                self.draw_board(highlighted_fields)
+                                continue
                             else:
                                 self.check = state
                         highlighted_fields = []
@@ -166,7 +190,7 @@ class ChessApp:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-    
+
     @staticmethod
     def position_to_field(pos, inverted):
         """Determine field based on position."""

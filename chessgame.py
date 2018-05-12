@@ -3,6 +3,7 @@
 from time import time
 from chessplayer import ChessPlayer
 from chessboard import ChessBoard
+import chesspiece
 
 
 class ChessGame(object):
@@ -29,6 +30,20 @@ class ChessGame(object):
 
     def get_board(self):
         return self.chessboard
+
+    def choose_promotion(self, piece_name):
+        if not self.chessboard.promotion:
+            return False
+        else:
+            promoted_piece, promoted_pos = self.chessboard.promotion
+            if piece_name == 'Queen':
+                self.chessboard.set(chesspiece.Queen(promoted_piece.color, promoted_pos), promoted_pos)
+            elif piece_name == 'Rook':
+                self.chessboard.set(chesspiece.Rook(promoted_piece.color, promoted_pos), promoted_pos)
+            elif piece_name == 'Bishop':
+                self.chessboard.set(chesspiece.Bishop(promoted_piece.color, promoted_pos), promoted_pos)
+            elif piece_name == 'Knight':
+                self.chessboard.set(chesspiece.Knight(promoted_piece.color, promoted_pos), promoted_pos)
 
     def move(self, from_pos, to_pos):
         t_0 = time()
@@ -68,6 +83,9 @@ class ChessGame(object):
             state = 3
         elif check:
             state = 2
+        # check for promoted piece
+        elif self.chessboard.promotion:
+            state = 4
         else:
             state = 1
 

@@ -40,6 +40,7 @@ class ChessBoard(object):
         color = 'white'
         self.flag_castle = False
         self.enpassent_pieces = []
+        self.promotion = None
         self.col_names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         self.king_positions = {'white': None, 'black': None}
         for row in range(0, 8):
@@ -292,12 +293,24 @@ class ChessBoard(object):
                 # recall castle flag
                 self.flag_castle = False
 
+            # reset promotion
+            self.promotion = None
+            step = to_pos[0] - from_pos[0]
+
             # get field
             from_field = self.get(from_pos)
             to_field = self.get(to_pos)
             # get piece
             piece = from_field.get()
-            # first reset enpassent
+            captured_piece = to_field.get()
+
+            # check for promotion
+            if piece.short_name == 'p':
+                if piece.color == 'black' and to_pos[0] == 0 or \
+                    piece.color == 'white' and to_pos[0] == 7:
+                    self.promotion = (piece, to_pos)
+
+            # handle and then reset enpassent
             if self.enpassent_pieces is not []:
                 # was a piece captured enpassent?
                 if piece.short_name == 'p' and piece.enpassent == to_pos:
@@ -308,8 +321,8 @@ class ChessBoard(object):
                 for enpassent_piece in self.enpassent_pieces:
                     enpassent_piece.reset_enpassent()
                 self.enpassent_pieces = []
-            # check again for enpassent
-            step = to_pos[0] - from_pos[0]
+
+            # check for enpassent
             if piece.short_name == 'p' and abs(step) == 2:
                 # Are the neigbouring fields enemy pawns?
                 neighbors = [self.get((to_pos[0], to_pos[1] - i)).get() for i in [-1, 1]]
@@ -324,7 +337,6 @@ class ChessBoard(object):
 
             # empty field
             from_field.empty()
-            captured_piece = to_field.get()
             # put piece to field
             self.set(piece, to_pos)
             # increment number of moves
@@ -392,5 +404,4 @@ class ChessBoard(object):
                 else:
                     print(color + ' ' + underl + piece.short_name + end_char +  color + ' ' + end_char, end='')
         print('\n')
-
 
