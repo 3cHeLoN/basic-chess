@@ -46,3 +46,7 @@ class ChessPlayer(object):
     def inactivate_piece(self, chess_piece):
         """Remove a captured piece."""
         self.active_pieces.remove(chess_piece)
+
+    def add(self, piece):
+        """Add a piece."""
+        self.active_pieces.append(piece)

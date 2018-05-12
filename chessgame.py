@@ -31,24 +31,44 @@ class ChessGame(object):
     def get_board(self):
         return self.chessboard
 
-    def choose_promotion(self, piece_name):
+    def choose_promotion(self, piece_name, final=False):
+        # promotion state
         if not self.chessboard.promotion:
             return False
         else:
+            state = 4
             promoted_piece, promoted_pos = self.chessboard.promotion
             if piece_name == 'Queen':
-                self.chessboard.set(chesspiece.Queen(promoted_piece.color, promoted_pos), promoted_pos)
+                new_piece = chesspiece.Queen(promoted_piece.color, promoted_pos)
             elif piece_name == 'Rook':
-                self.chessboard.set(chesspiece.Rook(promoted_piece.color, promoted_pos), promoted_pos)
+                new_piece = chesspiece.Rook(promoted_piece.color, promoted_pos)
             elif piece_name == 'Bishop':
-                self.chessboard.set(chesspiece.Bishop(promoted_piece.color, promoted_pos), promoted_pos)
+                new_piece = chesspiece.Bishop(promoted_piece.color, promoted_pos)
             elif piece_name == 'Knight':
-                self.chessboard.set(chesspiece.Knight(promoted_piece.color, promoted_pos), promoted_pos)
+                new_piece = chesspiece.Knight(promoted_piece.color, promoted_pos)
+            self.chessboard.set(new_piece, promoted_pos)
+            if final:
+                self.chessboard.promotion = None
+                # check for check or checkmate!
+                check, checkmate = self.chessboard.check_or_mate(self.current_player.color)
+                # return state
+                if checkmate:
+                    state = 3
+                elif check:
+                    state = 2
+                else:
+                    state = 1
+                # remove piece from player pieces
+                if self.current_player.color == 'black':
+                    promoted_player = self.player_white
+                else:
+                    promoted_player = self.player_black
+                promoted_player.inactivate_piece(promoted_piece)
+                promoted_player.add(new_piece)
+            return state
 
     def move(self, from_pos, to_pos):
-        t_0 = time()
         notation, captured_piece = self.chessboard.move(self.current_player.color, from_pos, to_pos)
-        print("The move took", time() - t_0)
 
         # an illegal move was performed
         if notation is None:
@@ -71,7 +91,6 @@ class ChessGame(object):
             self.current_player.inactivate_piece(captured_piece)
 
         # check for check or checkmate!
-        t_0 = time()
         check, checkmate = self.chessboard.check_or_mate(self.current_player.color)
         if checkmate:
             print("Checkmate!")

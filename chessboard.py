@@ -1,6 +1,7 @@
 """A chess board."""
 
 import numpy as np
+from util import on_board
 
 
 class Field(object):
@@ -325,7 +326,7 @@ class ChessBoard(object):
             # check for enpassent
             if piece.short_name == 'p' and abs(step) == 2:
                 # Are the neigbouring fields enemy pawns?
-                neighbors = [self.get((to_pos[0], to_pos[1] - i)).get() for i in [-1, 1]]
+                neighbors = [self.get((to_pos[0], to_pos[1] - i)).get() for i in [-1, 1] if on_board((to_pos[0], to_pos[1] - i))]
                 direction = np.sign(step)
 
                 for neighbor in neighbors:

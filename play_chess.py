@@ -52,6 +52,7 @@ class ChessApp:
         self.sprites['DK_black'] = load_image('img/king_black_dead.png')
 
         self.sprites['Check'] = load_image('img/check.png')
+        self.sprites['Promotion'] = load_image('img/promotion.png')
 
         self.white_highlight = theme_data['highlight_color_light']
         self.black_highlight = theme_data['highlight_color_dark']
@@ -63,6 +64,14 @@ class ChessApp:
         self.promotion_pieces = {0: 'Queen', 1: 'Rook', 2: 'Bishop', 3: 'Knight'}
         self.selected_promotion_piece = 0
 
+    def get_rect(self, position):
+        row, col = position
+        if self.turn_board and self.game.current_player.color == 'black':
+            pos_rect = Rect(560 - col *80, row * 80, 80, 80)
+        else:
+            pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
+        return pos_rect
+
     def draw_board(self, highlight_fields=None):
         # get current setup
         board = self.game.get_board()
@@ -71,6 +80,12 @@ class ChessApp:
         self.screen.fill((255, 64, 64))
         self.screen.blit(self.sprites['board'], Rect(0, 0, 640, 640))
         self.overlay.fill((0, 0, 0, 0))
+
+        promotion = board.promotion
+        if promotion:
+            promotion_pos = promotion[1]
+            pos_rect = self.get_rect(promotion_pos)
+            self.overlay.blit(self.sprites['Promotion'], pos_rect)
 
         if self.check:
             # get current king position
@@ -83,17 +98,14 @@ class ChessApp:
             for field_pos in highlight_fields:
                 row, col = field_pos
                 field = board.get((row, col))
-                if self.turn_board and self.game.current_player.color == 'black':
-                    pos_rect = Rect(560 - col *80, row * 80, 80, 80)
-                else:
-                    pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
+                pos_rect = self.get_rect((row, col))
                 if field.color == 'white':
                     self.overlay.fill(self.white_highlight, 
                             pos_rect)
                 else:
                     self.overlay.fill(self.black_highlight, 
                             pos_rect)
-            self.screen.blit(self.overlay, (0, 0))
+        self.screen.blit(self.overlay, (0, 0))
 
         for row in range(board.col_size):
             for col in range(board.row_size):
@@ -141,18 +153,18 @@ class ChessApp:
                         if event.button == 4:
                             self.selected_promotion_piece = (self.selected_promotion_piece + 1) % 4
                             self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
-                            print("selected promotion:", self.promotion_pieces[self.selected_promotion_piece])
                         elif event.button == 5:
                             self.selected_promotion_piece = (self.selected_promotion_piece - 1) % 4
                             self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
-                            print("selected promotion:", self.promotion_pieces[self.selected_promotion_piece])
                         elif event.button == 1:
+                            self.check = self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece], final=True)
                             current_mode = 0
+                            self.draw_board()
                         self.draw_board()
                     elif event.button == 1:
                         inverted = self.turn_board and self.game.current_player.color == 'black'
 
-                if event.type == pygame.MOUSEBUTTONUP:
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     clicked_row, clicked_col = self.position_to_field(pos, inverted)
                     field = board.get((clicked_row, clicked_col))
                     if current_mode == 0:
