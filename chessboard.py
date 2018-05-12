@@ -39,6 +39,7 @@ class ChessBoard(object):
         self.board = [[None for j in range(row_size)] for i in range(col_size)]
         color = 'white'
         self.flag_castle = False
+        self.enpassent_pieces = []
         self.col_names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         self.king_positions = {'white': None, 'black': None}
         for row in range(0, 8):
@@ -108,15 +109,11 @@ class ChessBoard(object):
 
         # test if king will be in check
         if test_check:
-            if piece.color == 'white':
-                opponent_color = 'black'
-            else:
-                opponent_color = 'white'
             # attempt the move
             to_piece = to_field.get()
             self.set(piece, to_pos)
             from_field.empty()
-            positions_under_attack = self.under_attack_by(opponent_color)
+            positions_under_attack = self.under_attack_by(self.opponent_color(color))
             if self.king_positions[piece.color] in positions_under_attack:
                 # undo move
                 self.set(piece, from_pos)
@@ -202,12 +199,18 @@ class ChessBoard(object):
                 valid_moves.append(to_pos)
         return valid_moves
 
-    def check_or_mate(self, color):
-        """Test if current player in checkmate."""
+    @staticmethod
+    def opponent_color(color):
+        """Return opponent color."""
         if color == 'white':
             opponent_color = 'black'
         else:
             opponent_color = 'white'
+        return opponent_color
+
+    def check_or_mate(self, color):
+        """Test if current player in checkmate."""
+        opponent_color = self.opponent_color(color)
         positions_under_attack = self.under_attack_by(opponent_color)
 
         check = False
@@ -222,7 +225,7 @@ class ChessBoard(object):
             legal_king_moves = self.legal_capture_moves(king_position, test_check=True)
             if len(legal_king_moves) ==  0:
                 # find the attacker(s)
-                attackers = self.get_attackers(king_position)
+                attackers = self.get_attackers(king_position, opponent_color)
                 if len(attackers) > 1:
                     checkmate = True
                 else:
@@ -246,13 +249,8 @@ class ChessBoard(object):
                                     checkmate = False
         return (check, checkmate)
 
-    def get_attackers(self, position, test_check=False):
+    def get_attackers(self, position, opponent_color, test_check=False):
         """Find the attacker of a certain position."""
-        piece = self.get(position).get()
-        if piece.color == 'white':
-            opponent_color = 'black'
-        else:
-            opponent_color = 'white'
         # TODO: make simpler
         attackers = []
         for row in range(8):
@@ -269,6 +267,7 @@ class ChessBoard(object):
         Returns notation of the move (if legal) and the captured piece.
         If no piece was captured then the returned piece is None.
         """
+        opponent_color = self.opponent_color(color)
         if self.legal_move(color, from_pos, to_pos, test_check=True):
             notation = self.get_notation(from_pos, to_pos)
             # check if castle move
@@ -298,6 +297,31 @@ class ChessBoard(object):
             to_field = self.get(to_pos)
             # get piece
             piece = from_field.get()
+            # first reset enpassent
+            if self.enpassent_pieces is not []:
+                # was a piece captured enpassent?
+                if piece.short_name == 'p' and piece.enpassent == to_pos:
+                    # remove piece from board
+                    attacked_field = self.get(piece.attacked_position)
+                    captured_piece = attacked_field.get()
+                    attacked_field.empty()
+                for enpassent_piece in self.enpassent_pieces:
+                    enpassent_piece.reset_enpassent()
+                self.enpassent_pieces = []
+            # check again for enpassent
+            step = to_pos[0] - from_pos[0]
+            if piece.short_name == 'p' and abs(step) == 2:
+                # Are the neigbouring fields enemy pawns?
+                neighbors = [self.get((to_pos[0], to_pos[1] - i)).get() for i in [-1, 1]]
+                direction = np.sign(step)
+
+                for neighbor in neighbors:
+                    if neighbor is not None and neighbor.short_name == 'p' \
+                        and neighbor.color == opponent_color:
+                        # add position to capture moves
+                        neighbor.set_enpassent((to_pos[0] - direction, to_pos[1]), to_pos)
+                        self.enpassent_pieces.append(neighbor)
+
             # empty field
             from_field.empty()
             captured_piece = to_field.get()

@@ -39,6 +39,8 @@ class Pawn(ChessPiece):
         self.name = self.files[initial_col] + '_Pawn'
         self.short_name = 'p'
         self.may_jump = False
+        self.enpassent = None
+        self.attacked_position = None
         if color == 'white':
             self.direction = 1
         else:
@@ -50,6 +52,8 @@ class Pawn(ChessPiece):
         moves = []
         if on_board((row + self.direction, col)):
             moves.append((row + self.direction, col))
+        if self.enpassent:
+           moves.append(self.enpassent)
         return moves
 
     def valid_capture_moves(self, position):
@@ -60,6 +64,8 @@ class Pawn(ChessPiece):
             capture_moves.append((row + self.direction, col - 1))
         if on_board((row + self.direction, col + 1)):
             capture_moves.append((row + self.direction, col + 1))
+        if self.enpassent:
+            capture_moves.append(self.enpassent)
         return capture_moves
 
     def specialty_moves(self, position):
@@ -68,6 +74,16 @@ class Pawn(ChessPiece):
         if row == self.initial_position[0]:
             return [(row + self.direction * 2, col)]
         return []
+
+    def set_enpassent(self, position, attacked_position):
+        """Set enpassent move to pawn."""
+        self.enpassent = position
+        self.attacked_position = attacked_position
+
+    def reset_enpassent(self):
+        """Reset enpassent move."""
+        self.enpassent = None
+        self.attacked_position = None
 
 
 class Rook(ChessPiece):
