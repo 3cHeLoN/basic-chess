@@ -276,7 +276,7 @@ class ChessBoard(object):
             if self.flag_castle:
                 # also move corresponding rook
                 rook_col = np.floor(to_pos[1] / 4).astype('int') * 7
-                rook_field = self.get(from_pos[0], rook_col)
+                rook_field = self.get((from_pos[0], rook_col))
                 rook = rook_field.get()
 
                 # determine queen side or king side
@@ -289,7 +289,7 @@ class ChessBoard(object):
 
                 rook_field.empty()
                 rook_col = to_pos[1] + np.sign(from_pos[1] - to_pos[1])
-                rook_field = self.get(from_pos[0], rook_col)
+                rook_field = self.get((from_pos[0], rook_col))
                 rook_field.set(rook)
                 # recall castle flag
                 self.flag_castle = False
