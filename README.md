@@ -4,4 +4,13 @@ A simple chess program that will consist of:
 * The game logic written in Python
 * A chess engine writte in a low-level language (C++)
 
-This program might be further expanded in a full program.
+## Run
+To run the program simply type:
+```
+$ python play_chess.py
+```
+## Todo:
+* Implement stalemate
+* Implement forced draw
+* Simplify code
+* An AI chess engine
