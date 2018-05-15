@@ -3,6 +3,7 @@ import sys
 import pygame
 import json
 from pygame.locals import *
+from pygame import mixer
 from chessgame import ChessGame
 from time import sleep
 
@@ -19,8 +20,10 @@ def load_image(filename):
 class ChessApp:
 
     sprites = {}
+    sounds = {}
     
     def __init__(self, theme="Theme1", winstyle=0):
+        mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
         best_depth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
         self.screen = pygame.display.set_mode(SCREENRECT.size, winstyle, best_depth)
@@ -63,6 +66,7 @@ class ChessApp:
         self.turn_board = False
         self.promotion_pieces = {0: 'Queen', 1: 'Rook', 2: 'Bishop', 3: 'Knight'}
         self.selected_promotion_piece = 0
+        self.sounds['move'] = mixer.Sound('snd/move.wav')
 
     def get_rect(self, position):
         row, col = position
@@ -197,6 +201,7 @@ class ChessApp:
                                 self.check = state
                         highlighted_fields = []
                         current_mode = 0
+                        self.sounds['move'].play()
                         self.draw_board(highlighted_fields)
 
             if event.type == pygame.QUIT:
