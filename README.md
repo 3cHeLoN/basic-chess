@@ -9,6 +9,10 @@ To run the program simply type:
 ```
 $ python play_chess.py
 ```
+## Dependencies
+* pygame >= 1.9.3
+* numpy
+
 ## Todo:
 * Implement stalemate
 * Implement forced draw
