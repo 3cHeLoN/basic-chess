@@ -10,6 +10,7 @@ To run the program simply type:
 $ python play_chess.py
 ```
 ## Dependencies
+* python 3
 * pygame >= 1.9.3
 * numpy
 
