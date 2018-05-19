@@ -187,7 +187,9 @@ class ChessApp:
                                     (clicked_row, clicked_col))
                             if state == 0:
                                 continue
-                            elif state == 1:
+                            else:
+                                self.sounds['move'].play()
+                            if state == 1:
                                 self.check = 0
                             elif state == 4:
                                 # choose promotion
@@ -201,7 +203,6 @@ class ChessApp:
                                 self.check = state
                         highlighted_fields = []
                         current_mode = 0
-                        self.sounds['move'].play()
                         self.draw_board(highlighted_fields)
 
             if event.type == pygame.QUIT:
