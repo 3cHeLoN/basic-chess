@@ -5,7 +5,7 @@ from util import on_board
 
 
 class Field(object):
-    """Keep state of filed on the board."""
+    """Keep state of field on the board."""
 
     def __init__(self, color):
         """Initialize."""
