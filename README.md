@@ -3,8 +3,9 @@ A simple chess program that will consist of:
 * A front-end written for pygame (using SDL)
 * The game logic written in Python
 * A chess engine writte in a low-level language (C++)
+
 ![Chess board](https://github.com/3cHeLoN/basic-chess/blob/master/screen.png "Screenshot")
-https://github.com/3cHeLoN/basic-chess/blob/master/screen.png
+
 ## Run
 To run the program simply type:
 ```
