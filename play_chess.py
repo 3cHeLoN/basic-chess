@@ -1,5 +1,7 @@
 """Play chess in terminal."""
 import sys
+from enum import Enum, auto
+
 import pygame
 import json
 from pygame.locals import *
@@ -7,7 +9,14 @@ from pygame import mixer
 from chessgame import ChessGame
 from time import sleep
 
-SCREENRECT = Rect(0, 0, 640, 640)
+SCREEN_RECT = Rect(0, 0, 640, 640)
+
+
+class GameMode(Enum):
+    SELECT_PIECE = auto()
+    MAKE_MOVE = auto()
+    PROMOTION = auto()
+
 
 def load_image(filename):
     """Load an image into sdl surface."""
@@ -17,17 +26,18 @@ def load_image(filename):
         raise SystemExit("Could not load image \"%s\" %s" % (filename, pygame.get_error()))
     return surface.convert_alpha()
 
-class ChessApp:
 
+class ChessApp:
     sprites = {}
     sounds = {}
-    
-    def __init__(self, theme="Theme1", winstyle=0):
+
+    def __init__(self, theme="Theme1", window_style=0):
+        self.game = None
         mixer.pre_init(44100, -16, 1, 512)
         pygame.init()
-        best_depth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-        self.screen = pygame.display.set_mode(SCREENRECT.size, winstyle, best_depth)
-        
+        best_depth = pygame.display.mode_ok(SCREEN_RECT.size, window_style, 32)
+        self.screen = pygame.display.set_mode(SCREEN_RECT.size, window_style, best_depth)
+
         with open("img/themes.json", 'r') as fh:
             theme_data = json.load(fh)
 
@@ -60,7 +70,7 @@ class ChessApp:
         self.white_highlight = theme_data['highlight_color_light']
         self.black_highlight = theme_data['highlight_color_dark']
 
-        self.overlay = pygame.Surface((SCREENRECT.size), pygame.SRCALPHA)
+        self.overlay = pygame.Surface(SCREEN_RECT.size, pygame.SRCALPHA)
 
         self.check = 0
         self.turn_board = False
@@ -71,7 +81,7 @@ class ChessApp:
     def get_rect(self, position):
         row, col = position
         if self.turn_board and self.game.current_player.color == 'black':
-            pos_rect = Rect(560 - col *80, row * 80, 80, 80)
+            pos_rect = Rect(560 - col * 80, row * 80, 80, 80)
         else:
             pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
         return pos_rect
@@ -104,11 +114,11 @@ class ChessApp:
                 field = board.get((row, col))
                 pos_rect = self.get_rect((row, col))
                 if field.color == 'white':
-                    self.overlay.fill(self.white_highlight, 
-                            pos_rect)
+                    self.overlay.fill(self.white_highlight,
+                                      pos_rect)
                 else:
-                    self.overlay.fill(self.black_highlight, 
-                            pos_rect)
+                    self.overlay.fill(self.black_highlight,
+                                      pos_rect)
         self.screen.blit(self.overlay, (0, 0))
 
         for row in range(board.col_size):
@@ -117,23 +127,23 @@ class ChessApp:
                 if field.occupied:
                     piece = field.get()
                     if self.turn_board and self.game.current_player.color == 'black':
-                        pos_rect = Rect(560 - col *80, row * 80, 80, 80)
+                        pos_rect = Rect(560 - col * 80, row * 80, 80, 80)
                     else:
                         pos_rect = Rect(col * 80, 560 - row * 80, 80, 80)
                     if (row, col) == king_position:
                         if self.check == 2:
                             self.screen.blit(self.sprites['Check'],
-                                pos_rect)
+                                             pos_rect)
                         elif self.check == 3:
                             self.screen.blit(self.sprites['DK_' + piece.color],
-                                pos_rect)
+                                             pos_rect)
                             continue
                     self.screen.blit(self.sprites[piece.short_name + '_' + piece.color],
-                            pos_rect)
+                                     pos_rect)
 
         pygame.display.flip()
 
-    def run(self, winstyle=0):
+    def run(self):
         """Initialize game."""
         self.game = ChessGame()
         self.draw_board()
@@ -144,16 +154,17 @@ class ChessApp:
         """Get user input."""
         board = self.game.get_board()
         highlighted_fields = []
-        current_mode = 0
-        state = 0
+        current_mode = GameMode.SELECT_PIECE
+
         while True:
             ev = pygame.event.get()
             # proceed events
             for event in ev:
-                # handle MOUSEBUTTONUP
+                # handle MOUSE BUTTON UP
+                pos = pygame.mouse.get_pos()
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = pygame.mouse.get_pos()
-                    if current_mode == 2:
+                    if current_mode == GameMode.PROMOTION:
                         if event.button == 4:
                             self.selected_promotion_piece = (self.selected_promotion_piece + 1) % 4
                             self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
@@ -161,7 +172,8 @@ class ChessApp:
                             self.selected_promotion_piece = (self.selected_promotion_piece - 1) % 4
                             self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece])
                         elif event.button == 1:
-                            self.check = self.game.choose_promotion(self.promotion_pieces[self.selected_promotion_piece], final=True)
+                            self.check = self.game.choose_promotion(
+                                self.promotion_pieces[self.selected_promotion_piece], final=True)
                             current_mode = 0
                             self.draw_board()
                         self.draw_board()
@@ -171,7 +183,7 @@ class ChessApp:
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     clicked_row, clicked_col = self.position_to_field(pos, inverted)
                     field = board.get((clicked_row, clicked_col))
-                    if current_mode == 0:
+                    if current_mode == GameMode.SELECT_PIECE:
                         if field.occupied:
                             piece = field.get()
                             if piece.color == self.game.current_player.color:
@@ -179,16 +191,17 @@ class ChessApp:
                                 from_col = clicked_col
                                 highlighted_fields.append((clicked_row, clicked_col))
                                 self.draw_board(highlighted_fields)
-                                current_mode = 1
-                    elif current_mode == 1:
+                                current_mode = GameMode.MAKE_MOVE
+                    elif current_mode == GameMode.MAKE_MOVE:
                         # deselect piece?
                         if not (clicked_row == from_row and clicked_col == from_col):
                             state = self.game.move((from_row, from_col),
-                                    (clicked_row, clicked_col))
+                                                   (clicked_row, clicked_col))
                             if state == 0:
-                                continue
+                                raise ValueError("Not possible")
                             else:
                                 self.sounds['move'].play()
+
                             if state == 1:
                                 self.check = 0
                             elif state == 4:
@@ -218,7 +231,8 @@ class ChessApp:
         else:
             row = int((640 - pos[1]) / 80)
             col = int(pos[0] / 80)
-        return (row, col)
+        return row, col
+
 
 if __name__ == '__main__':
     app = ChessApp("Theme4")

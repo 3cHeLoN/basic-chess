@@ -1,13 +1,15 @@
 """Chess pieces."""
 
 from abc import ABC
+
 from util import on_board
 
+
 class ChessPiece(ABC):
-    """Keep state of chesspiece."""
+    """Keep state of chess piece."""
 
     def __init__(self, color, initial_position):
-        """Initalize chess piece."""
+        """Initialize chess piece."""
         if color not in ['white', 'black']:
             raise ValueError("Unrecognized color!")
         self._color = color
@@ -39,7 +41,7 @@ class Pawn(ChessPiece):
         self.name = self.files[initial_col] + '_Pawn'
         self.short_name = 'p'
         self.may_jump = False
-        self.enpassent = None
+        self.en_passant = None
         self.attacked_position = None
         if color == 'white':
             self.direction = 1
@@ -52,8 +54,8 @@ class Pawn(ChessPiece):
         moves = []
         if on_board((row + self.direction, col)):
             moves.append((row + self.direction, col))
-        if self.enpassent:
-           moves.append(self.enpassent)
+        if self.en_passant:
+            moves.append(self.en_passant)
         return moves
 
     def valid_capture_moves(self, position):
@@ -64,8 +66,8 @@ class Pawn(ChessPiece):
             capture_moves.append((row + self.direction, col - 1))
         if on_board((row + self.direction, col + 1)):
             capture_moves.append((row + self.direction, col + 1))
-        if self.enpassent:
-            capture_moves.append(self.enpassent)
+        if self.en_passant:
+            capture_moves.append(self.en_passant)
         return capture_moves
 
     def specialty_moves(self, position):
@@ -75,14 +77,14 @@ class Pawn(ChessPiece):
             return [(row + self.direction * 2, col)]
         return []
 
-    def set_enpassent(self, position, attacked_position):
-        """Set enpassent move to pawn."""
-        self.enpassent = position
+    def set_en_passant(self, position, attacked_position):
+        """Set en passant move to pawn."""
+        self.en_passant = position
         self.attacked_position = attacked_position
 
-    def reset_enpassent(self):
-        """Reset enpassent move."""
-        self.enpassent = None
+    def reset_en_passant(self):
+        """Reset en passant move."""
+        self.en_passant = None
         self.attacked_position = None
 
 
@@ -97,7 +99,8 @@ class Rook(ChessPiece):
         self.short_name = 'R'
         self.may_jump = False
 
-    def valid_moves(self, position):
+    @staticmethod
+    def valid_moves(position):
         """Return list of valid moves."""
         row, col = position
         # add current column
@@ -110,7 +113,8 @@ class Rook(ChessPiece):
         """Return list of valid capture moves."""
         return self.valid_moves(position)
 
-    def specialty_moves(self, position):
+    @staticmethod
+    def specialty_moves():
         """Return list of valid capture_moves."""
         return []
 
@@ -126,7 +130,8 @@ class Bishop(ChessPiece):
         self.short_name = 'B'
         self.may_jump = False
 
-    def valid_moves(self, position):
+    @staticmethod
+    def valid_moves(position):
         """Return list of valid moves."""
         row, col = position
         # add first diagonal
@@ -144,7 +149,8 @@ class Bishop(ChessPiece):
         """Return a list of valid capture moves."""
         return self.valid_moves(position)
 
-    def specialty_moves(self, position):
+    @staticmethod
+    def specialty_moves():
         """Return list of valid capture_moves."""
         return []
 
@@ -160,7 +166,8 @@ class Knight(ChessPiece):
         self.short_name = 'N'
         self.may_jump = True
 
-    def valid_moves(self, position):
+    @staticmethod
+    def valid_moves(position):
         """Return list of valid moves."""
         row, col = position
         moves = [(row + i, col + j)
@@ -175,7 +182,8 @@ class Knight(ChessPiece):
         """Return list of valid capture moves."""
         return self.valid_moves(position)
 
-    def specialty_moves(self, position):
+    @staticmethod
+    def specialty_moves():
         """Return list of valid capture_moves."""
         return []
 
@@ -186,7 +194,6 @@ class King(ChessPiece):
     def __init__(self, color, initial_position):
         """Create knight."""
         ChessPiece.__init__(self, color, initial_position)
-        row, col = initial_position
         self.name = 'King'
         self.short_name = 'K'
         self.may_jump = False
@@ -195,7 +202,8 @@ class King(ChessPiece):
         else:
             self.castle_fields = [(7, 2), (7, 6)]
 
-    def valid_moves(self, position):
+    @staticmethod
+    def valid_moves(position):
         """Return list of valid moves."""
         row, col = position
         moves = [(row + i, col + j)
@@ -208,7 +216,7 @@ class King(ChessPiece):
         """Return list of valid capture moves."""
         return self.valid_moves(position)
 
-    def specialty_moves(self, position):
+    def specialty_moves(self):
         """Return list of valid capture_moves."""
         if self.n_moves > 0:
             return []
@@ -222,12 +230,12 @@ class Queen(ChessPiece):
     def __init__(self, color, initial_position):
         """Create queen."""
         ChessPiece.__init__(self, color, initial_position)
-        row, col = initial_position
         self.name = 'Queen'
         self.short_name = 'Q'
         self.may_jump = False
 
-    def valid_moves(self, position):
+    @staticmethod
+    def valid_moves(position):
         """Return list of valid moves."""
         row, col = position
         # add first diagonal
@@ -249,6 +257,7 @@ class Queen(ChessPiece):
         """Return a list of valid capture moves."""
         return self.valid_moves(position)
 
-    def specialty_moves(self, position):
+    @staticmethod
+    def specialty_moves():
         """Return list of valid capture_moves."""
         return []

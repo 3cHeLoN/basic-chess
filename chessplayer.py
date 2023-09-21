@@ -7,7 +7,7 @@ class ChessPlayer:
     """A chess player."""
 
     def __init__(self, color):
-        """Setp chess player."""
+        """Setup chess player."""
         if color not in ['white', 'black']:
             raise ValueError("Unrecognized color!")
         self.color = color
@@ -19,9 +19,9 @@ class ChessPlayer:
         """Initialize pieces."""
         self.active_pieces = []
         cols = range(8)
-        if self.color == 'white':
-            front_row = 1
-            back_row = 0
+        front_row = 1
+        back_row = 0
+
         if self.color == 'black':
             front_row = 6
             back_row = 7
