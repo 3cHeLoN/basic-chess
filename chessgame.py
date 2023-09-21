@@ -7,6 +7,7 @@ import chesspiece
 
 
 class ChessGame(object):
+class ChessGame:
     """A game of chess."""
 
     def __init__(self):

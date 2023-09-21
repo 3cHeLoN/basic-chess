@@ -3,7 +3,7 @@
 from chesspiece import *
 
 
-class ChessPlayer(object):
+class ChessPlayer:
     """A chess player."""
 
     def __init__(self, color):

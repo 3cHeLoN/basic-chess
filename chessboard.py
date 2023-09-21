@@ -4,7 +4,7 @@ import numpy as np
 from util import on_board
 
 
-class Field(object):
+class Field:
     """Keep state of field on the board."""
 
     def __init__(self, color):
@@ -30,7 +30,7 @@ class Field(object):
         self.occupied = False
 
 
-class ChessBoard(object):
+class ChessBoard:
     """Keep state of chessboard."""
 
     def __init__(self, row_size=8, col_size=8):
