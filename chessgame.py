@@ -6,7 +6,13 @@ from chessboard import ChessBoard
 import chesspiece
 
 
-class ChessGame(object):
+class GameState(Enum):
+    CHECKMATE = auto()
+    CHECK = auto()
+    PROMOTION = auto()
+    NORMAL = auto()
+
+
 class ChessGame:
     """A game of chess."""
 
